@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package clientaggregation;
+
+option java_multiple_files = true;
+option java_package = "me.nikonorov.clients.api.grpc.generated";
+option java_outer_classname = "ClientAggregationApiProto";
+
+service ClientAggregationApi {
+  rpc AggregateClient (AggregateClientRequest) returns (AggregateClientResponse);
+}
+
+message AggregateClientRequest {
+  string request_id = 1;
+  string client_id = 2;
+}
+
+message AggregateClientResponse {
+  string request_id = 1;
+  string client_id = 2;
+  string segment = 3;
+  int32 risk_score = 4;
+  AggregatedExternalSignal system_a = 5;
+  AggregatedExternalSignal system_b = 6;
+  repeated string warnings = 7;
+}
+
+message AggregatedExternalSignal {
+  string source = 1;
+  string status = 2;
+  string value = 3;
+}

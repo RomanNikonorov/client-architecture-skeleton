@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package externalsystems;
+
+option java_multiple_files = true;
+option java_package = "me.nikonorov.clients.infrastructure.grpc.generated";
+option java_outer_classname = "ExternalSystemsProto";
+
+service ExternalSystemA {
+  rpc GetClientSignal (ClientSignalRequest) returns (SystemAResponse);
+}
+
+service ExternalSystemB {
+  rpc GetClientOffer (ClientSignalRequest) returns (SystemBResponse);
+}
+
+message ClientSignalRequest {
+  string request_id = 1;
+  string client_id = 2;
+}
+
+message SystemAResponse {
+  string status = 1;
+  string verification_level = 2;
+}
+
+message SystemBResponse {
+  string status = 1;
+  string offer_code = 2;
+}
