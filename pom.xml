@@ -15,7 +15,7 @@
     <artifactId>client-architecture-skeleton</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>client-architecture-skeleton</name>
-    <description>Skeleton for a Spring Boot 4 integration microservice with virtual-thread fan-out.</description>
+    <description>Скелет интеграционного микросервиса на Spring Boot 4 с fan-out на virtual threads.</description>
 
     <properties>
         <java.version>25</java.version>

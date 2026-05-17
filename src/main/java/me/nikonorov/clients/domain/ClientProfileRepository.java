@@ -1,20 +1,20 @@
 package me.nikonorov.clients.domain;
 
 /**
- * Domain repository contract for loading client profiles.
+ * Доменный контракт репозитория для загрузки профилей клиентов.
  *
- * <p>Application services use this port without knowing whether the data comes
- * from JPA, another database technology, a cache, or a remote service.</p>
+ * <p>Прикладные сервисы используют этот порт, не зная, поступают ли данные из
+ * JPA, другой технологии БД, кеша или удаленного сервиса.</p>
  */
 public interface ClientProfileRepository {
 
     /**
-     * Finds a client profile by its business identifier.
+     * Ищет профиль клиента по его бизнес-идентификатору.
      *
-     * @param clientId client identifier from an application command
-     * @return matching client profile
-     * @throws RuntimeException when no profile exists; the infrastructure
-     *                          adapter chooses the concrete exception type
+     * @param clientId идентификатор клиента из прикладной команды
+     * @return найденный профиль клиента
+     * @throws RuntimeException если профиль не существует; инфраструктурный
+     *                          адаптер выбирает конкретный тип исключения
      */
     ClientProfile findByClientId(String clientId);
 }

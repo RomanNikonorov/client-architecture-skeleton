@@ -2,10 +2,10 @@ package me.nikonorov.clients.api.grpc;
 
 import me.nikonorov.clients.api.grpc.generated.AggregateClientRequest;
 import me.nikonorov.clients.api.grpc.generated.AggregateClientResponse;
-import me.nikonorov.clients.application.AsyncProperties;
-import me.nikonorov.clients.application.ClientAggregationResult;
-import me.nikonorov.clients.application.ClientAggregationUseCase;
-import me.nikonorov.clients.application.FanOutExecutor;
+import me.nikonorov.clients.application.fanout.AsyncProperties;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
+import me.nikonorov.clients.application.fanout.FanOutExecutor;
 import me.nikonorov.clients.domain.ClientProfile;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;

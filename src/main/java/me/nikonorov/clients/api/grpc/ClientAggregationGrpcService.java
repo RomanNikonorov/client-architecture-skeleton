@@ -1,8 +1,8 @@
 package me.nikonorov.clients.api.grpc;
 
-import me.nikonorov.clients.application.ClientAggregationCommand;
-import me.nikonorov.clients.application.ClientAggregationResult;
-import me.nikonorov.clients.application.ClientAggregationUseCase;
+import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
 import me.nikonorov.clients.api.grpc.generated.AggregateClientRequest;
 import me.nikonorov.clients.api.grpc.generated.AggregateClientResponse;
 import me.nikonorov.clients.api.grpc.generated.AggregatedExternalSignal;
@@ -11,11 +11,11 @@ import io.grpc.stub.StreamObserver;
 import org.springframework.grpc.server.service.GrpcService;
 
 /**
- * gRPC inbound adapter for the client aggregation API.
+ * Входной gRPC-адаптер для API агрегации клиента.
  *
- * <p>The service maps generated gRPC request and response messages at the API
- * boundary. Business orchestration remains in {@link ClientAggregationUseCase},
- * allowing REST and gRPC endpoints to share the same application flow.</p>
+ * <p>Service маппит сгенерированные gRPC-сообщения запроса и ответа на границе API.
+ * Бизнес-оркестрация остается в {@link ClientAggregationUseCase}, что позволяет
+ * REST и gRPC endpoints использовать один прикладной flow.</p>
  */
 @GrpcService
 class ClientAggregationGrpcService extends ClientAggregationApiGrpc.ClientAggregationApiImplBase {
@@ -23,19 +23,19 @@ class ClientAggregationGrpcService extends ClientAggregationApiGrpc.ClientAggreg
     private final ClientAggregationUseCase useCase;
 
     /**
-     * Creates the gRPC service.
+     * Создает gRPC service.
      *
-     * @param useCase application use case that owns aggregation orchestration
+     * @param useCase прикладной сценарий, владеющий оркестрацией агрегации
      */
     ClientAggregationGrpcService(ClientAggregationUseCase useCase) {
         this.useCase = useCase;
     }
 
     /**
-     * Handles the unary {@code AggregateClient} gRPC method.
+     * Обрабатывает unary gRPC method {@code AggregateClient}.
      *
-     * @param request generated gRPC request message
-     * @param responseObserver gRPC response observer used to emit the result
+     * @param request сгенерированное gRPC-сообщение запроса
+     * @param responseObserver gRPC response observer для отправки результата
      */
     @Override
     public void aggregateClient(
@@ -50,10 +50,10 @@ class ClientAggregationGrpcService extends ClientAggregationApiGrpc.ClientAggreg
     }
 
     /**
-     * Maps the transport-neutral application result to the generated gRPC response.
+     * Маппит транспортно-независимый прикладной результат в сгенерированный gRPC-ответ.
      *
-     * @param result application aggregation result
-     * @return generated gRPC response message
+     * @param result прикладной результат агрегации
+     * @return сгенерированное gRPC-сообщение ответа
      */
     private AggregateClientResponse toResponse(ClientAggregationResult result) {
         return AggregateClientResponse.newBuilder()
@@ -68,10 +68,10 @@ class ClientAggregationGrpcService extends ClientAggregationApiGrpc.ClientAggreg
     }
 
     /**
-     * Maps one normalized external signal to its gRPC representation.
+     * Маппит один нормализованный внешний сигнал в его gRPC-представление.
      *
-     * @param signal application-level external signal
-     * @return generated gRPC signal message
+     * @param signal прикладной внешний сигнал
+     * @return сгенерированное gRPC signal message
      */
     private AggregatedExternalSignal toSignal(ClientAggregationResult.ExternalSignal signal) {
         return AggregatedExternalSignal.newBuilder()

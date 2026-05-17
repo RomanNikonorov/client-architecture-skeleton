@@ -1,9 +1,9 @@
 package me.nikonorov.clients.api.rest;
 
-import me.nikonorov.clients.application.AsyncProperties;
-import me.nikonorov.clients.application.ClientAggregationResult;
-import me.nikonorov.clients.application.ClientAggregationUseCase;
-import me.nikonorov.clients.application.FanOutExecutor;
+import me.nikonorov.clients.application.fanout.AsyncProperties;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
+import me.nikonorov.clients.application.fanout.FanOutExecutor;
 import me.nikonorov.clients.domain.ClientProfile;
 import org.junit.jupiter.api.Test;
 

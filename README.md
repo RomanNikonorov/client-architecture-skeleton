@@ -1,15 +1,15 @@
-# Client Architecture Skeleton
+# Скелет архитектуры клиентского сервиса
 
 Скелет показывает масштабируемую структуру интеграционного микросервиса:
 
-1. REST endpoint принимает запрос.
-2. gRPC endpoint может принимать тот же сценарий через отдельный inbound adapter.
-3. Application слой параллельно запускает чтение из БД и outbound вызовы через `FanOutExecutor`.
+1. REST-точка входа принимает запрос.
+2. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
+3. Прикладной слой параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
 4. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
-5. Outbound gRPC использует blocking stubs, outbound REST использует Spring `RestClient`.
+5. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
 6. Архитектурные правила зафиксированы в ADR и проверяются тестами.
 
-## Endpoint
+## Точка входа
 
 ```http
 POST /api/v1/clients/aggregate
@@ -21,33 +21,35 @@ Content-Type: application/json
 }
 ```
 
-## Layering
+## Слои
 
-- `api.rest` - REST входные адаптеры.
-- `api.grpc` - gRPC входные адаптеры.
-- `application` - use cases, orchestration, ports to external systems.
-- `domain` - domain model and repository contract.
-- `infrastructure` - JPA, outbound gRPC clients, technical configuration.
-- `internal` - implementation details that should not be used by other modules.
+- `api.rest` - входные REST-адаптеры.
+- `api.grpc` - входные gRPC-адаптеры.
+- `application.usecase` - сценарии использования, command/result records и бизнес-оркестрация.
+- `application.port` - прикладные порты к внешним системам.
+- `application.fanout` - технический API для ограниченного fan-out внутри use cases.
+- `domain` - доменная модель и контракт репозитория.
+- `infrastructure` - JPA, исходящие gRPC-клиенты, исходящие REST-клиенты и техническая конфигурация.
+- `internal` - детали реализации, которые не должны использоваться другими модулями.
 
-Inbound adapters must stay thin: validate/map transport requests and call application use cases.
-Outbound integrations must be hidden behind application ports.
+Входные адаптеры должны оставаться тонкими: валидировать и маппить транспортные запросы, затем вызывать `application.usecase`.
+Исходящие интеграции должны быть скрыты за портами из `application.port`.
 
 ## Virtual Threads
 
-Use cases must use `FanOutExecutor` for bounded parallel work. They must not create or inject
-`ExecutorService`, `Semaphore`, `Thread`, or direct `CompletableFuture.supplyAsync` orchestration.
+Use cases должны использовать `application.fanout.FanOutExecutor` для ограниченной параллельной работы. Им нельзя создавать или внедрять
+`ExecutorService`, `Semaphore`, `Thread` или прямую оркестрацию через `CompletableFuture.supplyAsync`.
 
-The infrastructure implementation is `VirtualThreadFanOutExecutor`. The limit configured by
-`app.async.max-parallel-tasks-per-request` is per request, not a global bulkhead.
+Инфраструктурная реализация - `VirtualThreadFanOutExecutor`. Лимит из
+`app.async.max-parallel-tasks-per-request` действует на один запрос, а не как глобальный ограничитель всего сервиса.
 
-## Runtime Strategy
+## Стратегия Runtime
 
-`pom.xml` использует Spring Boot `4.0.6`, Java `25` как runtime/compiler target, and no preview/incubator APIs.
+`pom.xml` использует Spring Boot `4.0.6` и Java `25` как runtime/compiler target; preview/incubator API не используются.
 
-## Configuration
+## Конфигурация
 
-Outbound gRPC channels:
+Исходящие gRPC-каналы:
 
 ```yaml
 spring:
@@ -60,7 +62,7 @@ spring:
           address: localhost:9092
 ```
 
-Business-level integration parameters:
+Бизнес-параметры интеграций:
 
 ```yaml
 app:
@@ -77,7 +79,7 @@ app:
       circuit-breaker-enabled: true
 ```
 
-Outbound REST clients:
+Исходящие REST-клиенты:
 
 ```yaml
 app:
@@ -89,14 +91,14 @@ app:
       critical: false
 ```
 
-## Architecture Decisions
+## Архитектурные решения
 
 - `docs/adr/0001-layering-and-module-boundaries.md`
 - `docs/adr/0002-virtual-threads-and-fan-out.md`
 - `docs/adr/0003-outbound-integrations.md`
 - `docs/adr/0004-testing-and-architecture-enforcement.md`
 
-## Verification
+## Проверка
 
 ```bash
 mvn test

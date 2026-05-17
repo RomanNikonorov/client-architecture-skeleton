@@ -7,20 +7,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.client.GrpcChannelFactory;
 
 /**
- * Infrastructure configuration for generated outbound gRPC stubs.
+ * Инфраструктурная конфигурация для сгенерированных исходящих gRPC stubs.
  *
- * <p>Each bean is built from a named Spring gRPC channel. Channel addresses and
- * TLS settings are configured under {@code spring.grpc.client.channels.*}.</p>
+ * <p>Каждый bean строится из именованного Spring gRPC channel. Адреса каналов
+ * и TLS-настройки задаются в {@code spring.grpc.client.channels.*}.</p>
  */
 @Configuration
 class GrpcClientConfiguration {
 
     /**
-     * Creates the blocking stub used by the system A adapter.
+     * Создает blocking stub, используемый адаптером system A.
      *
      * @param channels Spring gRPC channel factory
-     * @param properties external-system configuration containing the channel name
-     * @return generated blocking stub for system A
+     * @param properties конфигурация внешней системы с именем channel
+     * @return сгенерированный blocking stub для system A
      */
     @Bean
     ExternalSystemAGrpc.ExternalSystemABlockingStub externalSystemAStub(
@@ -31,11 +31,11 @@ class GrpcClientConfiguration {
     }
 
     /**
-     * Creates the blocking stub used by the system B adapter.
+     * Создает blocking stub, используемый адаптером system B.
      *
      * @param channels Spring gRPC channel factory
-     * @param properties external-system configuration containing the channel name
-     * @return generated blocking stub for system B
+     * @param properties конфигурация внешней системы с именем channel
+     * @return сгенерированный blocking stub для system B
      */
     @Bean
     ExternalSystemBGrpc.ExternalSystemBBlockingStub externalSystemBStub(

@@ -1,15 +1,15 @@
 package me.nikonorov.clients.domain;
 
 /**
- * Domain representation of a client profile stored by this service.
+ * Доменное представление профиля клиента, хранимого этим сервисом.
  *
- * <p>The record intentionally contains only business data needed by use cases.
- * Persistence concerns such as table names, column lengths, and JPA annotations
- * stay in the infrastructure entity.</p>
+ * <p>Запись намеренно содержит только бизнес-данные, необходимые сценариям
+ * использования. Детали хранения вроде имен таблиц, длин колонок и JPA-аннотаций
+ * остаются в инфраструктурной сущности.</p>
  *
- * @param clientId stable client identifier
- * @param segment business segment assigned to the client
- * @param riskScore current risk score used by aggregation scenarios
+ * @param clientId стабильный идентификатор клиента
+ * @param segment бизнес-сегмент, назначенный клиенту
+ * @param riskScore текущая оценка риска, используемая сценариями агрегации
  */
 public record ClientProfile(String clientId, String segment, int riskScore) {
 }

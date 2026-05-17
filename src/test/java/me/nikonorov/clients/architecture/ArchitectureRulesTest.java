@@ -3,8 +3,13 @@ package me.nikonorov.clients.architecture;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import me.nikonorov.clients.application.fanout.AsyncProperties;
+import me.nikonorov.clients.application.fanout.FanOutExecutor;
+import me.nikonorov.clients.application.port.ExternalSystemAClient;
+import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -45,6 +50,18 @@ class ArchitectureRulesTest {
                 .should().dependOnClassesThat().resideInAnyPackage("java.util.concurrent..")
                 .allowEmptyShould(true)
                 .check(classes);
+    }
+
+    @Test
+    void applicationResponsibilitiesStayInDedicatedPackages() {
+        assertThat(classes.get(ClientAggregationUseCase.class).getPackageName())
+                .isEqualTo("me.nikonorov.clients.application.usecase");
+        assertThat(classes.get(ExternalSystemAClient.class).getPackageName())
+                .isEqualTo("me.nikonorov.clients.application.port");
+        assertThat(classes.get(FanOutExecutor.class).getPackageName())
+                .isEqualTo("me.nikonorov.clients.application.fanout");
+        assertThat(classes.get(AsyncProperties.class).getPackageName())
+                .isEqualTo("me.nikonorov.clients.application.fanout");
     }
 
     @Test

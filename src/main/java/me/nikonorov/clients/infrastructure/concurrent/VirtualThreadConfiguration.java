@@ -7,21 +7,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Infrastructure configuration for virtual-thread execution.
+ * Инфраструктурная конфигурация для выполнения на virtual threads.
  *
- * <p>The executor bean is deliberately declared in infrastructure so
- * application use cases depend only on {@link me.nikonorov.clients.application.FanOutExecutor}
- * and cannot accidentally own thread-management policy.</p>
+ * <p>Bean executor намеренно объявлен в инфраструктурном слое, чтобы прикладные
+ * сценарии зависели только от {@link me.nikonorov.clients.application.fanout.FanOutExecutor}
+ * и не могли случайно владеть политикой управления потоками.</p>
  */
 @Configuration
 class VirtualThreadConfiguration {
 
     /**
-     * Creates the shared virtual-thread-per-task executor.
+     * Создает общий executor virtual-thread-per-task.
      *
-     * <p>The executor is closed by Spring during application shutdown.</p>
+     * <p>Executor закрывается Spring во время shutdown приложения.</p>
      *
-     * @return executor used by infrastructure fan-out components
+     * @return executor, используемый инфраструктурными fan-out компонентами
      */
     @Bean(destroyMethod = "close")
     ExecutorService virtualThreadExecutor() {

@@ -5,21 +5,21 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
- * Spring Boot entry point for the client integration service.
+ * Точка входа Spring Boot для интеграционного сервиса клиентов.
  *
- * <p>The application scans configuration properties and component beans under
- * {@code me.nikonorov.clients}. New REST, gRPC, application, domain, and
- * infrastructure classes should stay under this root package so Spring and
- * Spring Modulith can discover them consistently.</p>
+ * <p>Приложение сканирует конфигурационные свойства и component beans под
+ * {@code me.nikonorov.clients}. Новые REST, gRPC, прикладные, доменные и
+ * инфраструктурные классы должны оставаться под этим корневым пакетом, чтобы
+ * Spring и Spring Modulith находили их единообразно.</p>
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class ClientArchitectureSkeletonApplication {
 
     /**
-     * Starts the Spring Boot application.
+     * Запускает Spring Boot приложение.
      *
-     * @param args command line arguments passed by the runtime
+     * @param args аргументы командной строки, переданные средой выполнения
      */
     public static void main(String[] args) {
         SpringApplication.run(ClientArchitectureSkeletonApplication.class, args);

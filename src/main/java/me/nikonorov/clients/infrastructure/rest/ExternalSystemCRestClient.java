@@ -1,17 +1,17 @@
 package me.nikonorov.clients.infrastructure.rest;
 
-import me.nikonorov.clients.application.ClientAggregationCommand;
-import me.nikonorov.clients.application.ClientAggregationResult;
-import me.nikonorov.clients.application.ExternalSystemCClient;
+import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.clients.application.port.ExternalSystemCClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /**
- * Example outbound REST adapter for external system C.
+ * Пример исходящего REST-адаптера для внешней системы C.
  *
- * <p>The adapter demonstrates the standard blocking {@link RestClient} pattern
- * used by this service. It owns URI construction, response mapping, and
- * fallback behavior while exposing only the application port.</p>
+ * <p>Адаптер демонстрирует стандартный блокирующий pattern с {@link RestClient},
+ * используемый этим сервисом. Он владеет построением URI, маппингом ответа и
+ * fallback-поведением, наружу открывая только прикладной порт.</p>
  */
 @Component
 class ExternalSystemCRestClient implements ExternalSystemCClient {
@@ -20,10 +20,10 @@ class ExternalSystemCRestClient implements ExternalSystemCClient {
     private final ExternalRestSystemsProperties properties;
 
     /**
-     * Creates the REST adapter.
+     * Создает REST-адаптер.
      *
-     * @param externalSystemCRestClient typed {@code RestClient} bean for system C
-     * @param properties REST integration configuration
+     * @param externalSystemCRestClient типизированный bean {@code RestClient} для system C
+     * @param properties конфигурация REST-интеграции
      */
     ExternalSystemCRestClient(
             RestClient externalSystemCRestClient,
@@ -34,10 +34,10 @@ class ExternalSystemCRestClient implements ExternalSystemCClient {
     }
 
     /**
-     * Calls system C and maps its response to the normalized external signal model.
+     * Вызывает system C и маппит ответ в нормализованную модель внешнего сигнала.
      *
-     * @param command aggregation command containing request and client identifiers
-     * @return normalized signal from system C or an unavailable fallback signal
+     * @param command команда агрегации с идентификаторами запроса и клиента
+     * @return нормализованный сигнал от system C или fallback-сигнал о недоступности
      */
     @Override
     public ClientAggregationResult.ExternalSignal getClientSignal(ClientAggregationCommand command) {
@@ -61,10 +61,10 @@ class ExternalSystemCRestClient implements ExternalSystemCClient {
     }
 
     /**
-     * Response DTO owned by the system C REST adapter.
+     * DTO ответа, принадлежащий REST-адаптеру system C.
      *
-     * @param status integration-level status
-     * @param value integration-specific signal value
+     * @param status статус уровня интеграции
+     * @param value значение сигнала, специфичное для интеграции
      */
     record SystemCResponse(String status, String value) {
     }

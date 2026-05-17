@@ -1,8 +1,8 @@
 package me.nikonorov.clients.infrastructure.grpc;
 
-import me.nikonorov.clients.application.ClientAggregationCommand;
-import me.nikonorov.clients.application.ClientAggregationResult;
-import me.nikonorov.clients.application.ExternalSystemBClient;
+import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.clients.application.port.ExternalSystemBClient;
 import me.nikonorov.clients.infrastructure.grpc.generated.ClientSignalRequest;
 import me.nikonorov.clients.infrastructure.grpc.generated.ExternalSystemBGrpc;
 import me.nikonorov.clients.infrastructure.grpc.generated.SystemBResponse;
@@ -14,12 +14,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
- * Outbound gRPC adapter for external system B.
+ * Исходящий gRPC-адаптер для внешней системы B.
  *
- * <p>System B is modeled as an optional integration by default. Runtime
- * failures can be wrapped with a circuit breaker and converted into an
- * {@code UNAVAILABLE} signal unless configuration marks the integration as
- * critical.</p>
+ * <p>System B по умолчанию смоделирована как необязательная интеграция. Runtime
+ * runtime-ошибки могут быть обернуты circuit breaker и преобразованы в сигнал
+ * {@code UNAVAILABLE}, если конфигурация не помечает интеграцию как критичную.</p>
  */
 @Component
 class ExternalSystemBGrpcClient implements ExternalSystemBClient {
@@ -29,11 +28,11 @@ class ExternalSystemBGrpcClient implements ExternalSystemBClient {
     private final CircuitBreaker circuitBreaker;
 
     /**
-     * Creates the adapter.
+     * Создает адаптер.
      *
-     * @param stub generated blocking stub configured for system B
-     * @param properties external-system business, deadline, and fallback configuration
-     * @param circuitBreakers registry used to obtain the named system B circuit breaker
+     * @param stub сгенерированный blocking stub, настроенный для system B
+     * @param properties бизнес-, deadline- и fallback-конфигурация внешней системы
+     * @param circuitBreakers registry для получения именованного circuit breaker system B
      */
     ExternalSystemBGrpcClient(
             ExternalSystemBGrpc.ExternalSystemBBlockingStub stub,
@@ -46,10 +45,10 @@ class ExternalSystemBGrpcClient implements ExternalSystemBClient {
     }
 
     /**
-     * Calls system B and applies optional resilience/fallback policy.
+     * Вызывает system B и применяет необязательную resilience/fallback policy.
      *
-     * @param command aggregation command containing request and client identifiers
-     * @return normalized signal from system B or an unavailable fallback signal
+     * @param command команда агрегации с идентификаторами запроса и клиента
+     * @return нормализованный сигнал от system B или fallback-сигнал о недоступности
      */
     @Override
     public ClientAggregationResult.ExternalSignal getClientSignal(ClientAggregationCommand command) {
@@ -70,10 +69,10 @@ class ExternalSystemBGrpcClient implements ExternalSystemBClient {
     }
 
     /**
-     * Performs the raw gRPC call to system B without fallback handling.
+     * Выполняет raw gRPC call к system B без fallback handling.
      *
-     * @param command aggregation command containing request and client identifiers
-     * @return normalized successful signal from system B
+     * @param command команда агрегации с идентификаторами запроса и клиента
+     * @return нормализованный успешный сигнал от system B
      */
     private ClientAggregationResult.ExternalSignal callSystemB(ClientAggregationCommand command) {
         ClientSignalRequest request = ClientSignalRequest.newBuilder()

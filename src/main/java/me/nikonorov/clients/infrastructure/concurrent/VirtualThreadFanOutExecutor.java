@@ -1,6 +1,6 @@
 package me.nikonorov.clients.infrastructure.concurrent;
 
-import me.nikonorov.clients.application.FanOutExecutor;
+import me.nikonorov.clients.application.fanout.FanOutExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -10,11 +10,11 @@ import java.util.concurrent.Semaphore;
 import java.util.function.Supplier;
 
 /**
- * Virtual-thread implementation of the application fan-out contract.
+ * Реализация прикладного контракта fan-out на virtual threads.
  *
- * <p>Each submitted task runs on the injected virtual-thread executor. A
- * request-local {@link Semaphore} limits how many tasks from one scope may run
- * simultaneously.</p>
+ * <p>Каждая отправленная задача выполняется на внедренном executor для virtual
+ * threads. Локальный для запроса {@link Semaphore} ограничивает, сколько задач
+ * из одной области могут выполняться одновременно.</p>
  */
 @Component
 class VirtualThreadFanOutExecutor implements FanOutExecutor {
@@ -22,19 +22,20 @@ class VirtualThreadFanOutExecutor implements FanOutExecutor {
     private final ExecutorService virtualThreadExecutor;
 
     /**
-     * Creates the executor adapter.
+     * Создает адаптер executor.
      *
-     * @param virtualThreadExecutor shared virtual-thread-per-task executor bean
+     * @param virtualThreadExecutor общий bean executor для virtual-thread-per-task
      */
     VirtualThreadFanOutExecutor(ExecutorService virtualThreadExecutor) {
         this.virtualThreadExecutor = virtualThreadExecutor;
     }
 
     /**
-     * Opens a new request-local fan-out scope.
+     * Открывает новую область fan-out, локальную для запроса.
      *
-     * @param maxParallelTasks maximum number of tasks allowed to run at once in this scope
-     * @return scope backed by the shared virtual-thread executor
+     * @param maxParallelTasks максимальное количество задач, которым разрешено
+     *                         одновременно выполняться в этой области
+     * @return область на базе общего executor для virtual threads
      */
     @Override
     public FanOutScope openScope(int maxParallelTasks) {
@@ -42,10 +43,10 @@ class VirtualThreadFanOutExecutor implements FanOutExecutor {
     }
 
     /**
-     * Concrete fan-out scope backed by one shared semaphore.
+     * Конкретная область fan-out на базе одного общего semaphore.
      *
-     * @param virtualThreadExecutor executor used to start virtual-thread tasks
-     * @param requestParallelism request-local capacity limiter
+     * @param virtualThreadExecutor executor для запуска задач на virtual threads
+     * @param requestParallelism limiter емкости, локальный для запроса
      */
     private record VirtualThreadFanOutScope(
             ExecutorService virtualThreadExecutor,
@@ -53,11 +54,11 @@ class VirtualThreadFanOutExecutor implements FanOutExecutor {
     ) implements FanOutScope {
 
         /**
-         * Submits a supplier to run when scope capacity is available.
+         * Отправляет supplier на выполнение, когда доступна емкость области.
          *
-         * @param supplier task body to execute
-         * @param <T> task result type
-         * @return joinable task handle
+         * @param supplier тело выполняемой задачи
+         * @param <T> тип результата задачи
+         * @return handle задачи, результат которой можно ожидать
          */
         @Override
         public <T> FanOutTask<T> submit(Supplier<T> supplier) {
@@ -67,12 +68,12 @@ class VirtualThreadFanOutExecutor implements FanOutExecutor {
         }
 
         /**
-         * Acquires scope capacity, runs the supplier, and always releases capacity.
+         * Захватывает емкость области, выполняет supplier и всегда освобождает емкость.
          *
-         * @param semaphore request-local capacity limiter
-         * @param supplier task body to execute
-         * @param <T> task result type
-         * @return supplier result
+         * @param semaphore limiter емкости, локальный для запроса
+         * @param supplier тело выполняемой задачи
+         * @param <T> тип результата задачи
+         * @return результат supplier
          */
         private <T> T runBounded(Semaphore semaphore, Supplier<T> supplier) {
             try {
@@ -90,17 +91,17 @@ class VirtualThreadFanOutExecutor implements FanOutExecutor {
     }
 
     /**
-     * {@link CompletableFuture}-backed fan-out task handle.
+     * Handle fan-out задачи на базе {@link CompletableFuture}.
      *
-     * @param future future representing the submitted task
-     * @param <T> task result type
+     * @param future future, представляющий отправленную задачу
+     * @param <T> тип результата задачи
      */
     private record CompletableFutureFanOutTask<T>(CompletableFuture<T> future) implements FanOutTask<T> {
 
         /**
-         * Waits for completion and unwraps runtime failures for use-case callers.
+         * Ожидает завершения и разворачивает runtime-ошибки для вызывающих сценариев.
          *
-         * @return task result
+         * @return результат задачи
          */
         @Override
         public T join() {

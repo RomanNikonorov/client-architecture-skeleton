@@ -6,10 +6,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * JPA entity mapped to the {@code client_profile} table.
+ * JPA entity, замапленная на таблицу {@code client_profile}.
  *
- * <p>This class is package-private because persistence details should not leak
- * into the domain or application layers. The repository adapter maps it to
+ * <p>Класс package-private, потому что persistence details не должны протекать
+ * в доменный или прикладной слои. Адаптер репозитория маппит его в
  * {@link me.nikonorov.clients.domain.ClientProfile}.</p>
  */
 @Entity
@@ -27,27 +27,27 @@ class ClientProfileEntity {
     private int riskScore;
 
     /**
-     * JPA constructor.
+     * Конструктор для JPA.
      */
     protected ClientProfileEntity() {
     }
 
     /**
-     * @return stored client identifier
+     * @return сохраненный идентификатор клиента
      */
     String getClientId() {
         return clientId;
     }
 
     /**
-     * @return stored client segment
+     * @return сохраненный сегмент клиента
      */
     String getSegment() {
         return segment;
     }
 
     /**
-     * @return stored client risk score
+     * @return сохраненная оценка риска клиента
      */
     int getRiskScore() {
         return riskScore;

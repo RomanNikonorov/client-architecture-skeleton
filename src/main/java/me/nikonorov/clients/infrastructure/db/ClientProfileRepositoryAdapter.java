@@ -5,10 +5,10 @@ import me.nikonorov.clients.domain.ClientProfileRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * JPA-backed implementation of the domain client profile repository port.
+ * JPA-backed реализация domain-порта репозитория профилей клиентов.
  *
- * <p>The adapter translates persistence entities and Spring Data semantics into
- * the domain-facing {@link ClientProfileRepository} contract.</p>
+ * <p>Адаптер переводит persistence-сущности и семантику Spring Data в
+ * доменный контракт {@link ClientProfileRepository}.</p>
  */
 @Repository
 class ClientProfileRepositoryAdapter implements ClientProfileRepository {
@@ -16,20 +16,20 @@ class ClientProfileRepositoryAdapter implements ClientProfileRepository {
     private final JpaClientProfileRepository repository;
 
     /**
-     * Creates the repository adapter.
+     * Создает адаптер репозитория.
      *
-     * @param repository Spring Data JPA repository for profile entities
+     * @param repository Spring Data JPA repository для сущностей профиля
      */
     ClientProfileRepositoryAdapter(JpaClientProfileRepository repository) {
         this.repository = repository;
     }
 
     /**
-     * Loads and maps a profile entity by client identifier.
+     * Загружает и маппит сущность профиля по идентификатору клиента.
      *
-     * @param clientId requested client identifier
-     * @return mapped domain profile
-     * @throws ClientProfileNotFoundException when the profile does not exist
+     * @param clientId запрошенный идентификатор клиента
+     * @return замапленный доменный профиль
+     * @throws ClientProfileNotFoundException если профиль не существует
      */
     @Override
     public ClientProfile findByClientId(String clientId) {

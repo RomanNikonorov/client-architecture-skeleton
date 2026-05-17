@@ -1,5 +1,9 @@
-package me.nikonorov.clients.application;
+package me.nikonorov.clients.application.usecase;
 
+import me.nikonorov.clients.application.fanout.AsyncProperties;
+import me.nikonorov.clients.application.fanout.FanOutExecutor;
+import me.nikonorov.clients.application.port.ExternalSystemAClient;
+import me.nikonorov.clients.application.port.ExternalSystemBClient;
 import me.nikonorov.clients.domain.ClientProfile;
 import me.nikonorov.clients.domain.ClientProfileRepository;
 import org.junit.jupiter.api.Test;

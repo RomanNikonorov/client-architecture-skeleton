@@ -1,7 +1,7 @@
 package me.nikonorov.clients.infrastructure.rest;
 
-import me.nikonorov.clients.application.ClientAggregationCommand;
-import me.nikonorov.clients.application.ClientAggregationResult;
+import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;

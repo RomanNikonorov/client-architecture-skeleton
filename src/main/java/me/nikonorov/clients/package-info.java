@@ -1,9 +1,9 @@
 /**
- * Root Spring Modulith application module for client integration capabilities.
+ * Корневой прикладной модуль Spring Modulith для клиентских интеграций.
  *
- * <p>All packages under this root belong to the same module in the current
- * layered architecture. Dependencies between layers are enforced separately by
- * architecture tests.</p>
+ * <p>Все пакеты под этим корнем относятся к одному модулю в текущей послойной
+ * архитектуре. Зависимости между слоями отдельно проверяются архитектурными
+ * тестами.</p>
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Clients",

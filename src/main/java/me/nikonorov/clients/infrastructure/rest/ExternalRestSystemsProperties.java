@@ -6,23 +6,23 @@ import java.net.URI;
 import java.time.Duration;
 
 /**
- * Business and client configuration for outbound REST integrations.
+ * Бизнес- и клиентская конфигурация для исходящих REST-интеграций.
  *
- * <p>Each REST adapter should receive its own typed configuration instead of
- * reading raw environment values directly.</p>
+ * <p>Каждый REST-адаптер должен получать собственную типизированную конфигурацию
+ * вместо прямого чтения сырых значений окружения.</p>
  *
- * @param systemC configuration for the example REST-backed external system C
+ * @param systemC конфигурация для примерной внешней системы C, доступной через REST
  */
 @ConfigurationProperties(prefix = "app.external-rest-systems")
 public record ExternalRestSystemsProperties(SystemConfig systemC) {
 
     /**
-     * Configuration shared by outbound REST adapters.
+     * Конфигурация, общая для исходящих REST-адаптеров.
      *
-     * @param baseUrl base URL used to build the adapter {@code RestClient}
-     * @param connectTimeout timeout for establishing the HTTP connection
-     * @param readTimeout timeout for reading the HTTP response
-     * @param critical whether adapter failures should be propagated
+     * @param baseUrl base URL для построения адаптера {@code RestClient}
+     * @param connectTimeout timeout на установку HTTP-соединения
+     * @param readTimeout timeout на чтение HTTP-ответа
+     * @param critical нужно ли пробрасывать ошибки адаптера
      */
     public record SystemConfig(
             URI baseUrl,

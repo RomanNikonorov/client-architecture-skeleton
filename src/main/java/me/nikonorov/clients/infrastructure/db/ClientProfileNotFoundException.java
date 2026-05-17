@@ -4,19 +4,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Exception raised when the local client profile store has no requested client.
+ * Exception, возникающий, когда локальное хранилище профилей не содержит запрошенного клиента.
  *
- * <p>The {@link ResponseStatus} annotation lets simple REST flows return
- * {@code 404 Not Found}. Larger services may replace this with a centralized
- * exception mapper without changing the domain repository port.</p>
+ * <p>Аннотация {@link ResponseStatus} позволяет простым REST flows возвращать
+ * {@code 404 Not Found}. Более крупные сервисы могут заменить это централизованным
+ * exception mapper без изменения domain repository port.</p>
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class ClientProfileNotFoundException extends RuntimeException {
 
     /**
-     * Creates the exception for a missing client.
+     * Создает exception для отсутствующего клиента.
      *
-     * @param clientId requested client identifier
+     * @param clientId запрошенный идентификатор клиента
      */
     ClientProfileNotFoundException(String clientId) {
         super("Client profile not found: " + clientId);

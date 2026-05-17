@@ -5,25 +5,25 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 /**
- * Business-level configuration for outbound gRPC integrations.
+ * Бизнес-конфигурация для исходящих gRPC-интеграций.
  *
- * <p>Transport channel addresses and SSL settings remain in
- * {@code spring.grpc.client.channels.*}. These properties describe how the
- * service should treat each external system at the business adapter level.</p>
+ * <p>Адреса транспортных каналов и SSL-настройки остаются в
+ * {@code spring.grpc.client.channels.*}. Эти свойства описывают, как сервис
+ * должен обрабатывать каждую внешнюю систему на уровне бизнес-адаптера.</p>
  *
- * @param systemA configuration for external system A
- * @param systemB configuration for external system B
+ * @param systemA конфигурация для внешней системы A
+ * @param systemB конфигурация для внешней системы B
  */
 @ConfigurationProperties(prefix = "app.external-systems")
 public record ExternalSystemsProperties(SystemConfig systemA, SystemConfig systemB) {
 
     /**
-     * Configuration shared by outbound gRPC adapters.
+     * Конфигурация, общая для исходящих gRPC-адаптеров.
      *
-     * @param channel Spring gRPC channel name
-     * @param deadline per-call deadline
-     * @param critical whether adapter failures should be propagated
-     * @param circuitBreakerEnabled whether the adapter should decorate calls with a circuit breaker
+     * @param channel имя Spring gRPC channel
+     * @param deadline deadline одного вызова
+     * @param critical нужно ли пробрасывать ошибки адаптера
+     * @param circuitBreakerEnabled должен ли адаптер декорировать вызовы circuit breaker
      */
     public record SystemConfig(
             String channel,

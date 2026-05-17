@@ -1,8 +1,8 @@
 package me.nikonorov.clients.api.rest;
 
-import me.nikonorov.clients.application.ClientAggregationCommand;
-import me.nikonorov.clients.application.ClientAggregationResult;
-import me.nikonorov.clients.application.ClientAggregationUseCase;
+import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
+import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST inbound adapter for client aggregation requests.
+ * Входной REST-адаптер для запросов агрегации клиента.
  *
- * <p>The controller stays intentionally thin: it validates the HTTP request
- * body, maps it to an application command, delegates to the use case, and
- * returns the transport-neutral application result.</p>
+ * <p>Контроллер намеренно остается тонким: валидирует тело HTTP-запроса, маппит
+ * его в прикладную команду, делегирует сценарию использования и возвращает
+ * транспортно-независимый прикладной результат.</p>
  */
 @RestController
 @RequestMapping("/api/v1/clients")
@@ -25,19 +25,19 @@ class ClientAggregationController {
     private final ClientAggregationUseCase useCase;
 
     /**
-     * Creates the controller.
+     * Создает контроллер.
      *
-     * @param useCase application use case that owns aggregation orchestration
+     * @param useCase прикладной сценарий, владеющий оркестрацией агрегации
      */
     ClientAggregationController(ClientAggregationUseCase useCase) {
         this.useCase = useCase;
     }
 
     /**
-     * Handles {@code POST /api/v1/clients/aggregate}.
+     * Обрабатывает {@code POST /api/v1/clients/aggregate}.
      *
-     * @param request validated REST request body
-     * @return HTTP 200 response with the aggregation result
+     * @param request провалидированное тело REST-запроса
+     * @return HTTP 200 ответ с результатом агрегации
      */
     @PostMapping("/aggregate")
     ResponseEntity<ClientAggregationResult> aggregate(@Valid @RequestBody ClientAggregationRequest request) {
@@ -46,13 +46,13 @@ class ClientAggregationController {
     }
 
     /**
-     * REST request DTO for the aggregation endpoint.
+     * REST DTO запроса для endpoint агрегации.
      *
-     * <p>This type is private to the inbound REST adapter. Application code must
-     * receive {@link ClientAggregationCommand} instead.</p>
+     * <p>Этот тип принадлежит только входному REST-адаптеру. Прикладной код
+     * должен вместо него получать {@link ClientAggregationCommand}.</p>
      *
-     * @param requestId caller-provided request correlation identifier
-     * @param clientId business identifier of the requested client
+     * @param requestId корреляционный идентификатор запроса, переданный вызывающей стороной
+     * @param clientId бизнес-идентификатор запрошенного клиента
      */
     record ClientAggregationRequest(
             @NotBlank String requestId,

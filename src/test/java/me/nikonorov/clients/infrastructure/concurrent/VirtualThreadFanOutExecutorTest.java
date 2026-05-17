@@ -1,6 +1,6 @@
 package me.nikonorov.clients.infrastructure.concurrent;
 
-import me.nikonorov.clients.application.FanOutExecutor;
+import me.nikonorov.clients.application.fanout.FanOutExecutor;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
