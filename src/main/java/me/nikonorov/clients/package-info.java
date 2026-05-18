@@ -1,12 +1,8 @@
 /**
- * Корневой прикладной модуль Spring Modulith для клиентских интеграций.
+ * Корневой package Spring Boot приложения.
  *
- * <p>Все пакеты под этим корнем относятся к одному модулю в текущей послойной
- * архитектуре. Зависимости между слоями отдельно проверяются архитектурными
- * тестами.</p>
+ * <p>Бизнес-домены размещаются в отдельных bounded context packages, например
+ * {@code client} и {@code credit}. Shared technical API остается в
+ * {@code application.fanout}.</p>
  */
-@org.springframework.modulith.ApplicationModule(
-        displayName = "Clients",
-        allowedDependencies = {}
-)
 package me.nikonorov.clients;

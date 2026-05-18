@@ -2,21 +2,34 @@
 
 ## Решение
 
-Сервис сохраняет послойную структуру пакетов:
+Сервис организован как набор bounded contexts, каждый из которых является
+кандидатом на будущий вынос в отдельный сервис:
 
-- `api.rest` и `api.grpc` содержат входные адаптеры.
-- `application.usecase` содержит сценарии использования, command/result records и бизнес-оркестрацию.
-- `application.port` содержит прикладные порты к внешним системам.
+- `client` содержит клиентскую агрегацию.
+- `credit` содержит кредитные решения.
+
+Внутри каждого bounded context сохраняется послойная структура:
+
+- `<context>.api.rest` и `<context>.api.grpc` содержат входные адаптеры.
+- `<context>.application.usecase` содержит сценарии использования, command/result records и бизнес-оркестрацию.
+- `<context>.application.port` содержит прикладные порты к внешним системам.
+- `<context>.domain` содержит доменные типы и контракты репозиториев.
+- `<context>.infrastructure` содержит JPA, исходящий gRPC, исходящий REST и техническую конфигурацию.
+
+Shared technical packages остаются вне бизнес-доменов:
+
 - `application.fanout` содержит технический API для ограниченного fan-out внутри use cases.
-- `domain` содержит доменные типы и контракты репозиториев.
-- `infrastructure` содержит JPA, исходящий gRPC, исходящий REST и техническую конфигурацию.
+- `infrastructure.concurrent` содержит реализацию fan-out на virtual threads.
 
-Входные адаптеры должны быть тонкими. Они валидируют и маппят транспортные запросы, затем вызывают `application.usecase`.
+Входные адаптеры должны быть тонкими. Они валидируют и маппят транспортные
+запросы, затем вызывают use case своего bounded context.
 
 ## Правила
 
-- `api.*` не должен зависеть от `infrastructure.*`.
-- `application.*` не должен зависеть от REST, gRPC, JPA или инфраструктурных классов.
-- Исходящие интеграции доступны только через порты из `application.port`.
+- `<context>.api.*` не должен зависеть от `<context>.infrastructure.*`.
+- `<context>.application.*` не должен зависеть от REST, gRPC, JPA или инфраструктурных классов.
+- `*.domain.*` не должен зависеть от Spring, JPA, REST, gRPC, API или infrastructure.
+- Bounded context не должен импортировать application/domain/infrastructure/API типы другого bounded context.
+- Исходящие интеграции доступны только через порты из `<context>.application.port`.
 - Бизнес-оркестрация и технический fan-out API не смешиваются в одном package.
 - Архитектурные тесты проверяют эти правила.

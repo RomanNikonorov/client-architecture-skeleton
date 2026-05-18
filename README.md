@@ -1,13 +1,20 @@
 # Скелет архитектуры клиентского сервиса
 
-Скелет показывает масштабируемую структуру интеграционного микросервиса:
+Скелет показывает масштабируемую структуру интеграционного микросервиса с двумя
+bounded contexts:
 
-1. REST-точка входа принимает запрос.
-2. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
-3. Прикладной слой параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
-4. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
-5. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
-6. Архитектурные правила зафиксированы в ADR и проверяются тестами.
+1. `client` агрегирует клиентский профиль и внешние сигналы.
+2. `credit` оценивает кредитное решение и оформлен как отдельный бизнес-домен.
+3. REST-точка входа принимает запрос.
+4. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
+5. Прикладной слой домена параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
+6. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
+7. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
+8. Архитектурные правила зафиксированы в ADR и проверяются тестами.
+
+Оба бизнес-домена имеют собственные слои `api`, `application`, `domain` и
+`infrastructure`. Shared-зависимостью остается только технический
+`application.fanout` API и его infrastructure implementation на virtual threads.
 
 ## Точка входа
 
@@ -21,19 +28,40 @@ Content-Type: application/json
 }
 ```
 
+Кредитный bounded context:
+
+```http
+POST /api/v1/credit/decisions
+Content-Type: application/json
+
+{
+  "requestId": "req-1",
+  "clientId": "client-001",
+  "requestedAmount": 300000
+}
+```
+
 ## Слои
 
-- `api.rest` - входные REST-адаптеры.
-- `api.grpc` - входные gRPC-адаптеры.
-- `application.usecase` - сценарии использования, command/result records и бизнес-оркестрация.
-- `application.port` - прикладные порты к внешним системам.
-- `application.fanout` - технический API для ограниченного fan-out внутри use cases.
-- `domain` - доменная модель и контракт репозитория.
-- `infrastructure` - JPA, исходящие gRPC-клиенты, исходящие REST-клиенты и техническая конфигурация.
+- `client` - bounded context клиентской агрегации.
+- `credit` - bounded context кредитных решений.
+- `<context>.api.rest` - входные REST-адаптеры домена.
+- `<context>.api.grpc` - входные gRPC-адаптеры домена.
+- `<context>.application.usecase` - сценарии использования, command/result records и бизнес-оркестрация домена.
+- `<context>.application.port` - прикладные порты домена к внешним системам.
+- `<context>.domain` - доменная модель и контракты репозиториев домена.
+- `<context>.infrastructure` - JPA, исходящие gRPC-клиенты, исходящие REST-клиенты и техническая конфигурация домена.
+- `application.fanout` - shared technical API для ограниченного fan-out внутри use cases.
+- `infrastructure.concurrent` - shared infrastructure implementation fan-out на virtual threads.
 - `internal` - детали реализации, которые не должны использоваться другими модулями.
 
-Входные адаптеры должны оставаться тонкими: валидировать и маппить транспортные запросы, затем вызывать `application.usecase`.
-Исходящие интеграции должны быть скрыты за портами из `application.port`.
+Входные адаптеры должны оставаться тонкими: валидировать и маппить транспортные
+запросы, затем вызывать use case своего bounded context. Исходящие интеграции
+должны быть скрыты за application-портами этого же bounded context.
+
+Bounded contexts не должны импортировать application/domain/infrastructure/API
+типы друг друга. Это сохраняет возможность вынести `client` или `credit` в
+отдельный сервис без распутывания внутренних зависимостей.
 
 ## Virtual Threads
 
@@ -60,35 +88,57 @@ spring:
           address: localhost:9091
         system-b:
           address: localhost:9092
+        credit-scoring:
+          address: localhost:9093
 ```
 
 Бизнес-параметры интеграций:
 
 ```yaml
 app:
-  external-systems:
-    system-a:
-      channel: system-a
-      deadline: 300ms
-      critical: true
-      circuit-breaker-enabled: false
-    system-b:
-      channel: system-b
-      deadline: 500ms
-      critical: false
-      circuit-breaker-enabled: true
+  client:
+    external-systems:
+      system-a:
+        channel: system-a
+        deadline: 300ms
+        critical: true
+        circuit-breaker-enabled: false
+      system-b:
+        channel: system-b
+        deadline: 500ms
+        critical: false
+        circuit-breaker-enabled: true
 ```
 
 Исходящие REST-клиенты:
 
 ```yaml
 app:
-  external-rest-systems:
-    system-c:
-      base-url: http://localhost:9083
-      connect-timeout: 300ms
-      read-timeout: 500ms
-      critical: false
+  client:
+    external-rest-systems:
+      system-c:
+        base-url: http://localhost:9083
+        connect-timeout: 300ms
+        read-timeout: 500ms
+        critical: false
+```
+
+Кредитный bounded context использует отдельные настройки под `app.credit`:
+
+```yaml
+app:
+  credit:
+    external-systems:
+      scoring:
+        channel: credit-scoring
+        deadline: 400ms
+        critical: false
+    external-rest-systems:
+      pricing:
+        base-url: http://localhost:9084
+        connect-timeout: 300ms
+        read-timeout: 500ms
+        critical: false
 ```
 
 ## Архитектурные решения

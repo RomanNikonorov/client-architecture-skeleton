@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package creditdecision;
+
+option java_multiple_files = true;
+option java_package = "me.nikonorov.clients.credit.api.grpc.generated";
+option java_outer_classname = "CreditDecisionApiProto";
+
+service CreditDecisionApi {
+  rpc DecideCredit (CreditDecisionRequest) returns (CreditDecisionResponse);
+}
+
+message CreditDecisionRequest {
+  string request_id = 1;
+  string client_id = 2;
+  int32 requested_amount = 3;
+}
+
+message CreditDecisionResponse {
+  string request_id = 1;
+  string client_id = 2;
+  bool approved = 3;
+  int32 approved_limit = 4;
+  string rate_plan = 5;
+  int32 annual_rate_basis_points = 6;
+  ScoringAssessmentMessage scoring = 7;
+  PricingOfferMessage pricing = 8;
+  repeated string warnings = 9;
+}
+
+message ScoringAssessmentMessage {
+  string source = 1;
+  string status = 2;
+  int32 score = 3;
+  int32 recommended_limit = 4;
+}
+
+message PricingOfferMessage {
+  string source = 1;
+  string status = 2;
+  string rate_plan = 3;
+  int32 annual_rate_basis_points = 4;
+}

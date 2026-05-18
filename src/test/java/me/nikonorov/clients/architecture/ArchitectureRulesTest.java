@@ -5,8 +5,10 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import me.nikonorov.clients.application.fanout.AsyncProperties;
 import me.nikonorov.clients.application.fanout.FanOutExecutor;
-import me.nikonorov.clients.application.port.ExternalSystemAClient;
-import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
+import me.nikonorov.clients.client.application.port.ExternalSystemAClient;
+import me.nikonorov.clients.client.application.usecase.ClientAggregationUseCase;
+import me.nikonorov.clients.credit.application.port.CreditScoringClient;
+import me.nikonorov.clients.credit.application.usecase.CreditDecisionUseCase;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,15 +55,33 @@ class ArchitectureRulesTest {
     }
 
     @Test
+    void domainDoesNotDependOnFrameworkOrAdapterTechnologies() {
+        noClasses()
+                .that().resideInAPackage("..domain..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "jakarta.persistence..",
+                        "org.springframework..",
+                        "io.grpc..",
+                        "..infrastructure..",
+                        "..api..")
+                .allowEmptyShould(true)
+                .check(classes);
+    }
+
+    @Test
     void applicationResponsibilitiesStayInDedicatedPackages() {
         assertThat(classes.get(ClientAggregationUseCase.class).getPackageName())
-                .isEqualTo("me.nikonorov.clients.application.usecase");
+                .isEqualTo("me.nikonorov.clients.client.application.usecase");
         assertThat(classes.get(ExternalSystemAClient.class).getPackageName())
-                .isEqualTo("me.nikonorov.clients.application.port");
+                .isEqualTo("me.nikonorov.clients.client.application.port");
         assertThat(classes.get(FanOutExecutor.class).getPackageName())
                 .isEqualTo("me.nikonorov.clients.application.fanout");
         assertThat(classes.get(AsyncProperties.class).getPackageName())
                 .isEqualTo("me.nikonorov.clients.application.fanout");
+        assertThat(classes.get(CreditDecisionUseCase.class).getPackageName())
+                .isEqualTo("me.nikonorov.clients.credit.application.usecase");
+        assertThat(classes.get(CreditScoringClient.class).getPackageName())
+                .isEqualTo("me.nikonorov.clients.credit.application.port");
     }
 
     @Test
@@ -71,6 +91,32 @@ class ArchitectureRulesTest {
                 .and().areTopLevelClasses()
                 .and().resideOutsideOfPackage("..generated..")
                 .should().dependOnClassesThat().resideInAPackage("..application..")
+                .allowEmptyShould(true)
+                .check(classes);
+    }
+
+    @Test
+    void creditContextDoesNotDependOnClientAggregationLayers() {
+        noClasses()
+                .that().resideInAPackage("..credit..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "me.nikonorov.clients.client.api..",
+                        "me.nikonorov.clients.client.domain..",
+                        "me.nikonorov.clients.client.application..",
+                        "me.nikonorov.clients.client.infrastructure..")
+                .allowEmptyShould(true)
+                .check(classes);
+    }
+
+    @Test
+    void clientContextDoesNotDependOnCreditLayers() {
+        noClasses()
+                .that().resideInAPackage("..client..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "me.nikonorov.clients.credit.api..",
+                        "me.nikonorov.clients.credit.domain..",
+                        "me.nikonorov.clients.credit.application..",
+                        "me.nikonorov.clients.credit.infrastructure..")
                 .allowEmptyShould(true)
                 .check(classes);
     }

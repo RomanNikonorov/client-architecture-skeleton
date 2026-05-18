@@ -26,6 +26,10 @@ spring:
           address: localhost:9092
           ssl:
             enabled: false
+        credit-scoring:
+          address: localhost:9093
+          ssl:
+            enabled: false
 
 management:
   endpoints:
@@ -40,23 +44,36 @@ app:
   async:
     # Ограничение fan-out внутри одного запроса, не глобальный bulkhead.
     max-parallel-tasks-per-request: 3
-  external-systems:
-    system-a:
-      channel: system-a
-      deadline: 300ms
-      critical: true
-      circuit-breaker-enabled: false
-    system-b:
-      channel: system-b
-      deadline: 500ms
-      critical: false
-      circuit-breaker-enabled: true
-  external-rest-systems:
-    system-c:
-      base-url: http://localhost:9083
-      connect-timeout: 300ms
-      read-timeout: 500ms
-      critical: false
+  client:
+    external-systems:
+      system-a:
+        channel: system-a
+        deadline: 300ms
+        critical: true
+        circuit-breaker-enabled: false
+      system-b:
+        channel: system-b
+        deadline: 500ms
+        critical: false
+        circuit-breaker-enabled: true
+    external-rest-systems:
+      system-c:
+        base-url: http://localhost:9083
+        connect-timeout: 300ms
+        read-timeout: 500ms
+        critical: false
+  credit:
+    external-systems:
+      scoring:
+        channel: credit-scoring
+        deadline: 400ms
+        critical: false
+    external-rest-systems:
+      pricing:
+        base-url: http://localhost:9084
+        connect-timeout: 300ms
+        read-timeout: 500ms
+        critical: false
 
 resilience4j:
   circuitbreaker:
