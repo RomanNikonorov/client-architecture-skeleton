@@ -5,7 +5,7 @@
 Сервис организован как набор bounded contexts, каждый из которых является
 кандидатом на будущий вынос в отдельный сервис:
 
-- `client` содержит клиентскую агрегацию.
+- `clients` содержит клиентскую агрегацию.
 - `credit` содержит кредитные решения.
 
 Внутри каждого bounded context сохраняется послойная структура:
@@ -18,8 +18,8 @@
 
 Shared technical packages остаются вне бизнес-доменов:
 
-- `application.fanout` содержит технический API для ограниченного fan-out внутри use cases.
-- `infrastructure.concurrent` содержит реализацию fan-out на virtual threads.
+- `fanout` содержит технический API для ограниченного fan-out внутри use cases.
+- `concurrent` содержит реализацию fan-out на virtual threads.
 
 Входные адаптеры должны быть тонкими. Они валидируют и маппят транспортные
 запросы, затем вызывают use case своего bounded context.

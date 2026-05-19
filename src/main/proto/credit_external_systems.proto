@@ -3,7 +3,7 @@ syntax = "proto3";
 package creditexternalsystems;
 
 option java_multiple_files = true;
-option java_package = "me.nikonorov.clients.credit.infrastructure.grpc.generated";
+option java_package = "me.nikonorov.credit.infrastructure.grpc.generated";
 option java_outer_classname = "CreditExternalSystemsProto";
 
 service CreditScoring {

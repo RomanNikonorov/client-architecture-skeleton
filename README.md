@@ -3,7 +3,7 @@
 Скелет показывает масштабируемую структуру интеграционного микросервиса с двумя
 bounded contexts:
 
-1. `client` агрегирует клиентский профиль и внешние сигналы.
+1. `clients` агрегирует клиентский профиль и внешние сигналы.
 2. `credit` оценивает кредитное решение и оформлен как отдельный бизнес-домен.
 3. REST-точка входа принимает запрос.
 4. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
@@ -14,7 +14,7 @@ bounded contexts:
 
 Оба бизнес-домена имеют собственные слои `api`, `application`, `domain` и
 `infrastructure`. Shared-зависимостью остается только технический
-`application.fanout` API и его infrastructure implementation на virtual threads.
+`fanout` API и его infrastructure implementation на virtual threads.
 
 ## Точка входа
 
@@ -43,7 +43,7 @@ Content-Type: application/json
 
 ## Слои
 
-- `client` - bounded context клиентской агрегации.
+- `clients` - bounded context клиентской агрегации.
 - `credit` - bounded context кредитных решений.
 - `<context>.api.rest` - входные REST-адаптеры домена.
 - `<context>.api.grpc` - входные gRPC-адаптеры домена.
@@ -51,8 +51,8 @@ Content-Type: application/json
 - `<context>.application.port` - прикладные порты домена к внешним системам.
 - `<context>.domain` - доменная модель и контракты репозиториев домена.
 - `<context>.infrastructure` - JPA, исходящие gRPC-клиенты, исходящие REST-клиенты и техническая конфигурация домена.
-- `application.fanout` - shared technical API для ограниченного fan-out внутри use cases.
-- `infrastructure.concurrent` - shared infrastructure implementation fan-out на virtual threads.
+- `fanout` - shared technical API для ограниченного fan-out внутри use cases.
+- `concurrent` - shared implementation fan-out на virtual threads.
 - `internal` - детали реализации, которые не должны использоваться другими модулями.
 
 Входные адаптеры должны оставаться тонкими: валидировать и маппить транспортные
@@ -60,12 +60,12 @@ Content-Type: application/json
 должны быть скрыты за application-портами этого же bounded context.
 
 Bounded contexts не должны импортировать application/domain/infrastructure/API
-типы друг друга. Это сохраняет возможность вынести `client` или `credit` в
+типы друг друга. Это сохраняет возможность вынести `clients` или `credit` в
 отдельный сервис без распутывания внутренних зависимостей.
 
 ## Virtual Threads
 
-Use cases должны использовать `application.fanout.FanOutExecutor` для ограниченной параллельной работы. Им нельзя создавать или внедрять
+Use cases должны использовать `fanout.FanOutExecutor` для ограниченной параллельной работы. Им нельзя создавать или внедрять
 `ExecutorService`, `Semaphore`, `Thread` или прямую оркестрацию через `CompletableFuture.supplyAsync`.
 
 Инфраструктурная реализация - `VirtualThreadFanOutExecutor`. Лимит из

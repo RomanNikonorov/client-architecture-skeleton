@@ -2,13 +2,13 @@
 
 ## Решение
 
-Вся ограниченная fan-out параллельность внутри use cases проходит через `application.fanout.FanOutExecutor`.
+Вся ограниченная fan-out параллельность внутри use cases проходит через `fanout.FanOutExecutor`.
 
 Use cases не должны создавать или внедрять `ExecutorService`, `Semaphore`, `Thread` или прямую оркестрацию через `CompletableFuture.supplyAsync`. Executor на virtual threads принадлежит infrastructure слою.
 
 ## Правила
 
-- `FanOutExecutor` находится в `application.fanout` и является техническим прикладным API.
+- `FanOutExecutor` находится в `fanout` и является техническим прикладным API.
 - `VirtualThreadFanOutExecutor` - инфраструктурная реализация.
 - Fan-out лимиты действуют на один запрос, а не как глобальный ограничитель всего сервиса.
 - Прерванное ожидание восстанавливает interrupt flag и завершается явной ошибкой.
