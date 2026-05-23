@@ -53,6 +53,7 @@ Content-Type: application/json
 - `<context>.infrastructure` - JPA, исходящие gRPC-клиенты, исходящие REST-клиенты и техническая конфигурация домена.
 - `fanout` - shared technical API для ограниченного fan-out внутри use cases.
 - `concurrent` - shared implementation fan-out на virtual threads.
+- `http` - shared technical helpers для исходящих REST-клиентов infrastructure слоя.
 - `internal` - детали реализации, которые не должны использоваться другими модулями.
 
 Входные адаптеры должны оставаться тонкими: валидировать и маппить транспортные
@@ -120,6 +121,7 @@ app:
         base-url: http://localhost:9083
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
         critical: false
 ```
 
@@ -138,6 +140,7 @@ app:
         base-url: http://localhost:9084
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
         critical: false
 ```
 

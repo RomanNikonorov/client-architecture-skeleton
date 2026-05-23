@@ -19,13 +19,20 @@ public record CreditRestSystemsProperties(SystemConfig pricing) {
      * @param baseUrl base URL pricing-системы
      * @param connectTimeout timeout на установку HTTP-соединения
      * @param readTimeout timeout на чтение HTTP-ответа
+     * @param poolSize максимальный размер connection pool для этого REST-клиента
      * @param critical нужно ли пробрасывать ошибки адаптера
      */
     public record SystemConfig(
             URI baseUrl,
             Duration connectTimeout,
             Duration readTimeout,
+            int poolSize,
             boolean critical
     ) {
+        public SystemConfig {
+            if (poolSize < 1) {
+                poolSize = 1;
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ import me.nikonorov.clients.application.port.ExternalSystemAClient;
 import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
 import me.nikonorov.credit.application.port.CreditScoringClient;
 import me.nikonorov.credit.application.usecase.CreditDecisionUseCase;
+import me.nikonorov.http.PooledRestClientRequestFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,6 +80,8 @@ class ArchitectureRulesTest {
                 .isEqualTo("me.nikonorov.fanout");
         assertThat(classes.get(AsyncProperties.class).getPackageName())
                 .isEqualTo("me.nikonorov.fanout");
+        assertThat(classes.get(PooledRestClientRequestFactory.class).getPackageName())
+                .isEqualTo("me.nikonorov.http");
         assertThat(classes.get(CreditDecisionUseCase.class).getPackageName())
                 .isEqualTo("me.nikonorov.credit.application.usecase");
         assertThat(classes.get(CreditScoringClient.class).getPackageName())

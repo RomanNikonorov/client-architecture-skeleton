@@ -35,6 +35,7 @@ class ExternalSystemCRestClientTest {
                             baseUrl,
                             Duration.ofMillis(300),
                             Duration.ofMillis(500),
+                            20,
                             false
                     )
             );

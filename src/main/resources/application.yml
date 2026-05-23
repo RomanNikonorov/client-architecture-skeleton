@@ -61,6 +61,7 @@ app:
         base-url: http://localhost:9083
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
         critical: false
   credit:
     external-systems:
@@ -73,6 +74,7 @@ app:
         base-url: http://localhost:9084
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
         critical: false
 
 resilience4j:
