@@ -20,18 +20,16 @@ class RestClientConfiguration {
     /**
      * Создает {@code RestClient}, используемый адаптером system C.
      *
-     * @param builder builder REST-клиента, предоставленный Spring
      * @param properties base URL и timeout-конфигурация для system C
      * @return настроенный REST-клиент для внешней системы C
      */
-    @Bean
-    RestClient externalSystemCRestClient(
-            RestClient.Builder builder,
+    @Bean("externalSystemCRestApiClient")
+    RestClient externalSystemCRestApiClient(
             @Qualifier("externalSystemCRequestFactory")
             HttpComponentsClientHttpRequestFactory requestFactory,
             ExternalRestSystemsProperties properties
     ) {
-        return builder
+        return RestClient.builder()
                 .baseUrl(properties.systemC().baseUrl().toString())
                 .requestFactory(requestFactory)
                 .build();

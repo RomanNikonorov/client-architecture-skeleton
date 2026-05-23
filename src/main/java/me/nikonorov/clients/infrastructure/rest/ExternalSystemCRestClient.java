@@ -3,6 +3,7 @@ package me.nikonorov.clients.infrastructure.rest;
 import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
 import me.nikonorov.clients.application.usecase.ClientAggregationResult;
 import me.nikonorov.clients.application.port.ExternalSystemCClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -26,6 +27,7 @@ class ExternalSystemCRestClient implements ExternalSystemCClient {
      * @param properties конфигурация REST-интеграции
      */
     ExternalSystemCRestClient(
+            @Qualifier("externalSystemCRestApiClient")
             RestClient externalSystemCRestClient,
             ExternalRestSystemsProperties properties
     ) {

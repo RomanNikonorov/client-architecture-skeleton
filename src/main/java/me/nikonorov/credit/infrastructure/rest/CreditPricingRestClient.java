@@ -3,6 +3,7 @@ package me.nikonorov.credit.infrastructure.rest;
 import me.nikonorov.credit.application.port.CreditPricingClient;
 import me.nikonorov.credit.application.usecase.CreditDecisionCommand;
 import me.nikonorov.credit.application.usecase.CreditDecisionResult;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -22,6 +23,7 @@ class CreditPricingRestClient implements CreditPricingClient {
      * @param properties конфигурация REST-интеграции
      */
     CreditPricingRestClient(
+            @Qualifier("creditPricingRestApiClient")
             RestClient creditPricingRestClient,
             CreditRestSystemsProperties properties
     ) {

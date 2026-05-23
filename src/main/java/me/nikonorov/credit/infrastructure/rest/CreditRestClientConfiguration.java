@@ -19,18 +19,16 @@ class CreditRestClientConfiguration {
     /**
      * Создает {@code RestClient}, используемый адаптером pricing.
      *
-     * @param builder builder REST-клиента, предоставленный Spring
      * @param properties base URL и timeout-конфигурация pricing
      * @return настроенный REST-клиент для pricing-системы
      */
-    @Bean
-    RestClient creditPricingRestClient(
-            RestClient.Builder builder,
+    @Bean("creditPricingRestApiClient")
+    RestClient creditPricingRestApiClient(
             @Qualifier("creditPricingRequestFactory")
             HttpComponentsClientHttpRequestFactory requestFactory,
             CreditRestSystemsProperties properties
     ) {
-        return builder
+        return RestClient.builder()
                 .baseUrl(properties.pricing().baseUrl().toString())
                 .requestFactory(requestFactory)
                 .build();
