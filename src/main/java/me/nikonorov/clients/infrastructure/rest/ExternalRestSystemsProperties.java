@@ -1,9 +1,9 @@
 package me.nikonorov.clients.infrastructure.rest;
 
+import me.nikonorov.http.OutboundRestClientProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.net.URI;
-import java.time.Duration;
 
 /**
  * Бизнес- и клиентская конфигурация для исходящих REST-интеграций.
@@ -14,28 +14,15 @@ import java.time.Duration;
  * @param systemC конфигурация для примерной внешней системы C, доступной через REST
  */
 @ConfigurationProperties(prefix = "app.client.external-rest-systems")
-public record ExternalRestSystemsProperties(SystemConfig systemC) {
+public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC) {
 
-    /**
-     * Конфигурация, общая для исходящих REST-адаптеров.
-     *
-     * @param baseUrl base URL для построения адаптера {@code RestClient}
-     * @param connectTimeout timeout на установку HTTP-соединения
-     * @param readTimeout timeout на чтение HTTP-ответа
-     * @param poolSize максимальный размер connection pool для этого REST-клиента
-     * @param critical нужно ли пробрасывать ошибки адаптера
-     */
-    public record SystemConfig(
-            URI baseUrl,
-            Duration connectTimeout,
-            Duration readTimeout,
-            int poolSize,
-            boolean critical
-    ) {
-        public SystemConfig {
-            if (poolSize < 1) {
-                poolSize = 1;
-            }
+    private static final URI DEFAULT_SYSTEM_C_BASE_URL = URI.create("http://localhost:9083");
+
+    public ExternalRestSystemsProperties {
+        if (systemC == null) {
+            systemC = OutboundRestClientProperties.withDefaultHttpParameters(DEFAULT_SYSTEM_C_BASE_URL);
+        } else {
+            systemC = systemC.withDefaultBaseUrl(DEFAULT_SYSTEM_C_BASE_URL);
         }
     }
 }

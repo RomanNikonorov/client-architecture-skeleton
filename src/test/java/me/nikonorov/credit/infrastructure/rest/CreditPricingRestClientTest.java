@@ -3,6 +3,7 @@ package me.nikonorov.credit.infrastructure.rest;
 import com.sun.net.httpserver.HttpServer;
 import me.nikonorov.credit.application.usecase.CreditDecisionCommand;
 import me.nikonorov.credit.application.usecase.CreditDecisionResult;
+import me.nikonorov.http.OutboundRestClientProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
@@ -32,11 +33,12 @@ class CreditPricingRestClientTest {
         try {
             URI baseUrl = URI.create("http://localhost:" + server.getAddress().getPort());
             CreditRestSystemsProperties properties = new CreditRestSystemsProperties(
-                    new CreditRestSystemsProperties.SystemConfig(
+                    new OutboundRestClientProperties(
                             baseUrl,
                             Duration.ofMillis(300),
                             Duration.ofMillis(500),
                             20,
+                            Duration.ofSeconds(30),
                             false
                     )
             );

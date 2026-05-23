@@ -1,9 +1,9 @@
 package me.nikonorov.credit.infrastructure.rest;
 
+import me.nikonorov.http.OutboundRestClientProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.net.URI;
-import java.time.Duration;
 
 /**
  * Бизнес- и клиентская конфигурация REST-интеграций кредитного bounded context.
@@ -11,28 +11,15 @@ import java.time.Duration;
  * @param pricing конфигурация внешней pricing-системы
  */
 @ConfigurationProperties(prefix = "app.credit.external-rest-systems")
-public record CreditRestSystemsProperties(SystemConfig pricing) {
+public record CreditRestSystemsProperties(OutboundRestClientProperties pricing) {
 
-    /**
-     * Конфигурация REST-адаптера.
-     *
-     * @param baseUrl base URL pricing-системы
-     * @param connectTimeout timeout на установку HTTP-соединения
-     * @param readTimeout timeout на чтение HTTP-ответа
-     * @param poolSize максимальный размер connection pool для этого REST-клиента
-     * @param critical нужно ли пробрасывать ошибки адаптера
-     */
-    public record SystemConfig(
-            URI baseUrl,
-            Duration connectTimeout,
-            Duration readTimeout,
-            int poolSize,
-            boolean critical
-    ) {
-        public SystemConfig {
-            if (poolSize < 1) {
-                poolSize = 1;
-            }
+    private static final URI DEFAULT_PRICING_BASE_URL = URI.create("http://localhost:9084");
+
+    public CreditRestSystemsProperties {
+        if (pricing == null) {
+            pricing = OutboundRestClientProperties.withDefaultHttpParameters(DEFAULT_PRICING_BASE_URL);
+        } else {
+            pricing = pricing.withDefaultBaseUrl(DEFAULT_PRICING_BASE_URL);
         }
     }
 }

@@ -23,8 +23,6 @@ import java.time.Duration;
  */
 public final class PooledRestClientRequestFactory {
 
-    private static final TimeValue IDLE_CONNECTION_EVICTION_TIMEOUT = TimeValue.ofSeconds(30);
-
     private PooledRestClientRequestFactory() {
     }
 
@@ -34,12 +32,14 @@ public final class PooledRestClientRequestFactory {
      * @param connectTimeout timeout на установку HTTP-соединения
      * @param readTimeout timeout на чтение HTTP-ответа
      * @param poolSize максимальный размер connection pool и per-route limit
+     * @param idleConnectionEvictionTimeout время простоя соединения перед eviction
      * @return request factory для передачи в {@code RestClient.Builder}
      */
     public static HttpComponentsClientHttpRequestFactory create(
             Duration connectTimeout,
             Duration readTimeout,
-            int poolSize
+            int poolSize,
+            Duration idleConnectionEvictionTimeout
     ) {
         PoolingHttpClientConnectionManager connectionManager = connectionManager(
                 connectTimeout,
@@ -54,7 +54,7 @@ public final class PooledRestClientRequestFactory {
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .evictExpiredConnections()
-                .evictIdleConnections(IDLE_CONNECTION_EVICTION_TIMEOUT)
+                .evictIdleConnections(TimeValue.of(idleConnectionEvictionTimeout))
                 .disableAutomaticRetries()
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =

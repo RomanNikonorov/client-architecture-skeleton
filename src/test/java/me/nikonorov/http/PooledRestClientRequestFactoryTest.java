@@ -15,7 +15,8 @@ class PooledRestClientRequestFactoryTest {
         HttpComponentsClientHttpRequestFactory requestFactory = PooledRestClientRequestFactory.create(
                 Duration.ofMillis(300),
                 Duration.ofMillis(500),
-                7
+                7,
+                Duration.ofSeconds(30)
         );
 
         assertThat(requestFactory.getHttpClient()).isNotNull();

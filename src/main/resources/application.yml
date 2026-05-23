@@ -62,6 +62,7 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
   credit:
     external-systems:
@@ -75,6 +76,7 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
 
 resilience4j:

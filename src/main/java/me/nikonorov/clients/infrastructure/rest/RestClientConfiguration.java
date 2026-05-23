@@ -1,6 +1,7 @@
 package me.nikonorov.clients.infrastructure.rest;
 
 import me.nikonorov.http.PooledRestClientRequestFactory;
+import me.nikonorov.http.OutboundRestClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,11 +46,12 @@ class RestClientConfiguration {
     HttpComponentsClientHttpRequestFactory externalSystemCRequestFactory(
             ExternalRestSystemsProperties properties
     ) {
-        ExternalRestSystemsProperties.SystemConfig systemC = properties.systemC();
+        OutboundRestClientProperties systemC = properties.systemC();
         return PooledRestClientRequestFactory.create(
                 systemC.connectTimeout(),
                 systemC.readTimeout(),
-                systemC.poolSize()
+                systemC.poolSize(),
+                systemC.idleConnectionEvictionTimeout()
         );
     }
 }

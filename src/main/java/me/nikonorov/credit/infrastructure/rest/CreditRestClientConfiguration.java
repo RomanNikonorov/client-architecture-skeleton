@@ -1,6 +1,7 @@
 package me.nikonorov.credit.infrastructure.rest;
 
 import me.nikonorov.http.PooledRestClientRequestFactory;
+import me.nikonorov.http.OutboundRestClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,11 +45,12 @@ class CreditRestClientConfiguration {
     HttpComponentsClientHttpRequestFactory creditPricingRequestFactory(
             CreditRestSystemsProperties properties
     ) {
-        CreditRestSystemsProperties.SystemConfig pricing = properties.pricing();
+        OutboundRestClientProperties pricing = properties.pricing();
         return PooledRestClientRequestFactory.create(
                 pricing.connectTimeout(),
                 pricing.readTimeout(),
-                pricing.poolSize()
+                pricing.poolSize(),
+                pricing.idleConnectionEvictionTimeout()
         );
     }
 }

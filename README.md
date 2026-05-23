@@ -122,8 +122,119 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
 ```
+
+### Конфигурирование исходящего REST-клиента
+
+REST-интеграция настраивается в три шага:
+
+1. YAML-блок конкретной внешней системы биндингом попадает в properties
+   bounded context.
+2. Общие HTTP-параметры хранятся в `http.OutboundRestClientProperties`.
+3. Infrastructure configuration создает именованный `RestClient` и отдельный
+   `HttpComponentsClientHttpRequestFactory` через `http.PooledRestClientRequestFactory`.
+
+Например, для `clients` YAML:
+
+```yaml
+app:
+  client:
+    external-rest-systems:
+      system-c:
+        base-url: http://localhost:9083
+        connect-timeout: 300ms
+        read-timeout: 500ms
+        pool-size: 20
+        idle-connection-eviction-timeout: 30s
+        critical: false
+```
+
+биндится в:
+
+```java
+@ConfigurationProperties(prefix = "app.client.external-rest-systems")
+public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC) {
+}
+```
+
+`OutboundRestClientProperties` содержит transport-настройки:
+
+- `baseUrl` - базовый URL внешней REST-системы;
+- `connectTimeout` - timeout на установку HTTP-соединения;
+- `readTimeout` - timeout на чтение HTTP-ответа;
+- `poolSize` - максимальный размер connection pool и per-route limit;
+- `idleConnectionEvictionTimeout` - время простоя соединения перед eviction;
+- `critical` - признак, должен ли adapter пробрасывать ошибки вместо fallback.
+
+Общие HTTP defaults задаются один раз в `OutboundRestClientProperties`:
+
+| Параметр | Default |
+| --- | --- |
+| `connect-timeout` | `300ms` |
+| `read-timeout` | `500ms` |
+| `pool-size` | `20` |
+| `idle-connection-eviction-timeout` | `30s` |
+
+Default `base-url` зависит от конкретной внешней системы и задается в properties
+bounded context. Например, `ExternalRestSystemsProperties` подставляет
+`http://localhost:9083` для `system-c`, а `CreditRestSystemsProperties`
+подставляет `http://localhost:9084` для `pricing`. Любой параметр можно
+переопределить через YAML.
+
+Infrastructure configuration должна создавать два bean на внешнюю систему:
+
+```java
+@Bean("externalSystemCRestApiClient")
+RestClient externalSystemCRestApiClient(
+        @Qualifier("externalSystemCRequestFactory")
+        HttpComponentsClientHttpRequestFactory requestFactory,
+        ExternalRestSystemsProperties properties
+) {
+    return RestClient.builder()
+            .baseUrl(properties.systemC().baseUrl().toString())
+            .requestFactory(requestFactory)
+            .build();
+}
+
+@Bean(destroyMethod = "destroy")
+HttpComponentsClientHttpRequestFactory externalSystemCRequestFactory(
+        ExternalRestSystemsProperties properties
+) {
+    OutboundRestClientProperties systemC = properties.systemC();
+    return PooledRestClientRequestFactory.create(
+            systemC.connectTimeout(),
+            systemC.readTimeout(),
+            systemC.poolSize(),
+            systemC.idleConnectionEvictionTimeout()
+    );
+}
+```
+
+Adapter внедряет именно именованный `RestClient`:
+
+```java
+ExternalSystemCRestClient(
+        @Qualifier("externalSystemCRestApiClient")
+        RestClient externalSystemCRestClient,
+        ExternalRestSystemsProperties properties
+) {
+    this.externalSystemCRestClient = externalSystemCRestClient;
+    this.properties = properties;
+}
+```
+
+Для новой REST-интеграции в существующем bounded context нужно:
+
+1. Добавить поле `OutboundRestClientProperties` в properties этого context.
+2. В compact constructor properties подставить default `baseUrl` через
+   `OutboundRestClientProperties.withDefaultHttpParameters(...)` или
+   `withDefaultBaseUrl(...)`.
+3. Добавить именованные beans `RestClient` и request factory в
+   `<context>.infrastructure.rest`.
+4. В adapter внедрить `RestClient` через `@Qualifier`.
+5. Покрыть adapter mapping/fallback behavior тестом.
 
 Кредитный bounded context использует отдельные настройки под `app.credit`:
 
@@ -141,6 +252,7 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
 ```
 
