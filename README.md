@@ -191,14 +191,7 @@ RestClient externalSystemCRestApiClient(
 HttpComponentsClientHttpRequestFactory externalSystemCRequestFactory(
         ExternalRestSystemsProperties properties
 ) {
-    OutboundRestClientProperties systemC = properties.systemC();
-    return PooledRestClientRequestFactory.create(
-            systemC.connectTimeout(),
-            systemC.readTimeout(),
-            systemC.poolSize(),
-            systemC.maxConnectionsPerRoute(),
-            systemC.idleConnectionEvictionTimeout()
-    );
+    return PooledRestClientRequestFactory.requestFactory(properties.systemC());
 }
 ```
 

@@ -10,8 +10,6 @@ import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
-import java.time.Duration;
-
 /**
  * Shared helper для создания production-ready request factory под Spring
  * {@code RestClient}.
@@ -29,58 +27,48 @@ public final class PooledRestClientRequestFactory {
     /**
      * Создает request factory с отдельным HTTP connection pool.
      *
-     * @param connectTimeout timeout на установку HTTP-соединения
-     * @param readTimeout timeout на чтение HTTP-ответа
-     * @param poolSize максимальный размер connection pool
-     * @param maxConnectionsPerRoute максимальный размер connection pool на один route
-     * @param idleConnectionEvictionTimeout время простоя соединения перед eviction
+     * @param properties нормализованные transport-настройки внешней REST-системы
      * @return request factory для передачи в {@code RestClient.Builder}
      */
-    public static HttpComponentsClientHttpRequestFactory create(
-            Duration connectTimeout,
-            Duration readTimeout,
-            int poolSize,
-            int maxConnectionsPerRoute,
-            Duration idleConnectionEvictionTimeout
+    public static HttpComponentsClientHttpRequestFactory requestFactory(
+            OutboundRestClientProperties properties
     ) {
-        PoolingHttpClientConnectionManager connectionManager = connectionManager(
-                connectTimeout,
-                readTimeout,
-                poolSize,
-                maxConnectionsPerRoute
-        );
+        PoolingHttpClientConnectionManager connectionManager = connectionPool(properties);
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(Timeout.of(connectTimeout))
-                .setResponseTimeout(Timeout.of(readTimeout))
+                .setConnectionRequestTimeout(Timeout.of(properties.connectTimeout()))
+                .setResponseTimeout(Timeout.of(properties.readTimeout()))
                 .build();
         CloseableHttpClient httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .evictExpiredConnections()
-                .evictIdleConnections(TimeValue.of(idleConnectionEvictionTimeout))
+                .evictIdleConnections(TimeValue.of(properties.idleConnectionEvictionTimeout()))
                 .disableAutomaticRetries()
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory =
                 new HttpComponentsClientHttpRequestFactory(httpClient);
-        requestFactory.setConnectionRequestTimeout(connectTimeout);
-        requestFactory.setReadTimeout(readTimeout);
+        requestFactory.setConnectionRequestTimeout(properties.connectTimeout());
+        requestFactory.setReadTimeout(properties.readTimeout());
         return requestFactory;
     }
 
-    static PoolingHttpClientConnectionManager connectionManager(
-            Duration connectTimeout,
-            Duration readTimeout,
-            int poolSize,
-            int maxConnectionsPerRoute
+    /**
+     * Создает отдельный HTTP connection pool для внешней REST-системы.
+     *
+     * @param properties нормализованные transport-настройки внешней REST-системы
+     * @return connection pool для Apache HttpClient 5
+     */
+    public static PoolingHttpClientConnectionManager connectionPool(
+            OutboundRestClientProperties properties
     ) {
         ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                .setConnectTimeout(Timeout.of(connectTimeout))
-                .setSocketTimeout(Timeout.of(readTimeout))
+                .setConnectTimeout(Timeout.of(properties.connectTimeout()))
+                .setSocketTimeout(Timeout.of(properties.readTimeout()))
                 .build();
         return PoolingHttpClientConnectionManagerBuilder.create()
                 .setDefaultConnectionConfig(connectionConfig)
-                .setMaxConnTotal(poolSize)
-                .setMaxConnPerRoute(maxConnectionsPerRoute)
+                .setMaxConnTotal(properties.poolSize())
+                .setMaxConnPerRoute(properties.maxConnectionsPerRoute())
                 .build();
     }
 }
