@@ -13,9 +13,8 @@ import org.springframework.web.client.RestClient;
  *
  * <p>Каждая внешняя REST-система должна иметь именованный bean {@link RestClient}
  * с base URL, timeout и connection pool, настроенными из типизированных
- * свойств. Конкретные clients создаются через
- * {@link RestClient.Builder#clone()} от shared {@code outboundRestClientBuilder},
- * чтобы сохранить observability и tracing.</p>
+ * свойств. Конкретные clients создаются через auto-configured
+ * {@link RestClient.Builder}, который предоставляет Spring Boot.</p>
  */
 @Configuration
 class RestClientConfiguration {
@@ -23,19 +22,18 @@ class RestClientConfiguration {
     /**
      * Создает {@code RestClient}, используемый адаптером system C.
      *
-     * @param outboundRestClientBuilder базовый shared builder с observability/tracing настройками
+     * @param restClientBuilder auto-configured builder с настройками Spring Boot
      * @param properties base URL и timeout-конфигурация для system C
      * @return настроенный REST-клиент для внешней системы C
      */
     @Bean("externalSystemCRestApiClient")
     RestClient externalSystemCRestApiClient(
-            @Qualifier("outboundRestClientBuilder")
-            RestClient.Builder outboundRestClientBuilder,
+            RestClient.Builder restClientBuilder,
             @Qualifier("externalSystemCRequestFactory")
             HttpComponentsClientHttpRequestFactory requestFactory,
             ExternalRestSystemsProperties properties
     ) {
-        return outboundRestClientBuilder.clone()
+        return restClientBuilder
                 .baseUrl(properties.systemC().baseUrl().toString())
                 .requestFactory(requestFactory)
                 .build();
