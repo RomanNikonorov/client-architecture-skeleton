@@ -14,6 +14,7 @@ import java.time.Duration;
  * @param connectTimeout timeout на установку HTTP-соединения
  * @param readTimeout timeout на чтение HTTP-ответа
  * @param poolSize максимальный размер connection pool для этого REST-клиента
+ * @param maxConnectionsPerRoute максимальный размер connection pool на один route
  * @param idleConnectionEvictionTimeout время простоя соединения перед eviction
  * @param critical нужно ли пробрасывать ошибки адаптера
  */
@@ -22,6 +23,7 @@ public record OutboundRestClientProperties(
         Duration connectTimeout,
         Duration readTimeout,
         int poolSize,
+        int maxConnectionsPerRoute,
         Duration idleConnectionEvictionTimeout,
         boolean critical
 ) {
@@ -56,6 +58,9 @@ public record OutboundRestClientProperties(
         if (poolSize < 1) {
             poolSize = DEFAULT_POOL_SIZE;
         }
+        if (maxConnectionsPerRoute < 1) {
+            maxConnectionsPerRoute = poolSize;
+        }
         if (idleConnectionEvictionTimeout == null || idleConnectionEvictionTimeout.isNegative()) {
             idleConnectionEvictionTimeout = DEFAULT_IDLE_CONNECTION_EVICTION_TIMEOUT;
         }
@@ -72,6 +77,7 @@ public record OutboundRestClientProperties(
                 baseUrl,
                 DEFAULT_CONNECT_TIMEOUT,
                 DEFAULT_READ_TIMEOUT,
+                DEFAULT_POOL_SIZE,
                 DEFAULT_POOL_SIZE,
                 DEFAULT_IDLE_CONNECTION_EVICTION_TIMEOUT,
                 false
@@ -93,6 +99,7 @@ public record OutboundRestClientProperties(
                 connectTimeout,
                 readTimeout,
                 poolSize,
+                maxConnectionsPerRoute,
                 idleConnectionEvictionTimeout,
                 critical
         );

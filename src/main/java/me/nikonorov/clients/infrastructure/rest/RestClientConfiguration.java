@@ -54,6 +54,7 @@ class RestClientConfiguration {
                 systemC.connectTimeout(),
                 systemC.readTimeout(),
                 systemC.poolSize(),
+                systemC.maxConnectionsPerRoute(),
                 systemC.idleConnectionEvictionTimeout()
         );
     }

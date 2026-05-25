@@ -16,6 +16,7 @@ class PooledRestClientRequestFactoryTest {
                 Duration.ofMillis(300),
                 Duration.ofMillis(500),
                 7,
+                3,
                 Duration.ofSeconds(30)
         );
 
@@ -28,10 +29,11 @@ class PooledRestClientRequestFactoryTest {
                 PooledRestClientRequestFactory.connectionManager(
                         Duration.ofMillis(300),
                         Duration.ofMillis(500),
-                        11
+                        11,
+                        5
                 );
 
         assertThat(connectionManager.getMaxTotal()).isEqualTo(11);
-        assertThat(connectionManager.getDefaultMaxPerRoute()).isEqualTo(11);
+        assertThat(connectionManager.getDefaultMaxPerRoute()).isEqualTo(5);
     }
 }

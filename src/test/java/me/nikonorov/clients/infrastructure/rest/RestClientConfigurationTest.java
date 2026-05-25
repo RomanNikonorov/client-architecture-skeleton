@@ -18,6 +18,7 @@ class RestClientConfigurationTest {
         assertThat(properties.systemC().connectTimeout()).isEqualTo(Duration.ofMillis(300));
         assertThat(properties.systemC().readTimeout()).isEqualTo(Duration.ofMillis(500));
         assertThat(properties.systemC().poolSize()).isEqualTo(20);
+        assertThat(properties.systemC().maxConnectionsPerRoute()).isEqualTo(20);
         assertThat(properties.systemC().idleConnectionEvictionTimeout()).isEqualTo(Duration.ofSeconds(30));
     }
 
@@ -29,6 +30,7 @@ class RestClientConfigurationTest {
                         Duration.ZERO,
                         Duration.ofMillis(-1),
                         0,
+                        0,
                         Duration.ofMillis(-1),
                         false
                 )
@@ -38,6 +40,7 @@ class RestClientConfigurationTest {
         assertThat(config.connectTimeout()).isEqualTo(Duration.ofMillis(300));
         assertThat(config.readTimeout()).isEqualTo(Duration.ofMillis(500));
         assertThat(config.poolSize()).isEqualTo(20);
+        assertThat(config.maxConnectionsPerRoute()).isEqualTo(20);
         assertThat(config.idleConnectionEvictionTimeout()).isEqualTo(Duration.ofSeconds(30));
     }
 
@@ -48,6 +51,7 @@ class RestClientConfigurationTest {
                 Duration.ofMillis(100),
                 Duration.ofMillis(200),
                 3,
+                2,
                 Duration.ZERO,
                 false
         );
@@ -56,6 +60,7 @@ class RestClientConfigurationTest {
         assertThat(config.connectTimeout()).isEqualTo(Duration.ofMillis(100));
         assertThat(config.readTimeout()).isEqualTo(Duration.ofMillis(200));
         assertThat(config.poolSize()).isEqualTo(3);
+        assertThat(config.maxConnectionsPerRoute()).isEqualTo(2);
         assertThat(config.idleConnectionEvictionTimeout()).isEqualTo(Duration.ZERO);
     }
 }

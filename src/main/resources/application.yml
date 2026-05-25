@@ -58,6 +58,7 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        max-connections-per-route: 20
         idle-connection-eviction-timeout: 30s
         critical: false
 resilience4j:

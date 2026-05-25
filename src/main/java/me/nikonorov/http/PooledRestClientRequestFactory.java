@@ -31,7 +31,8 @@ public final class PooledRestClientRequestFactory {
      *
      * @param connectTimeout timeout на установку HTTP-соединения
      * @param readTimeout timeout на чтение HTTP-ответа
-     * @param poolSize максимальный размер connection pool и per-route limit
+     * @param poolSize максимальный размер connection pool
+     * @param maxConnectionsPerRoute максимальный размер connection pool на один route
      * @param idleConnectionEvictionTimeout время простоя соединения перед eviction
      * @return request factory для передачи в {@code RestClient.Builder}
      */
@@ -39,12 +40,14 @@ public final class PooledRestClientRequestFactory {
             Duration connectTimeout,
             Duration readTimeout,
             int poolSize,
+            int maxConnectionsPerRoute,
             Duration idleConnectionEvictionTimeout
     ) {
         PoolingHttpClientConnectionManager connectionManager = connectionManager(
                 connectTimeout,
                 readTimeout,
-                poolSize
+                poolSize,
+                maxConnectionsPerRoute
         );
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(Timeout.of(connectTimeout))
@@ -67,7 +70,8 @@ public final class PooledRestClientRequestFactory {
     static PoolingHttpClientConnectionManager connectionManager(
             Duration connectTimeout,
             Duration readTimeout,
-            int poolSize
+            int poolSize,
+            int maxConnectionsPerRoute
     ) {
         ConnectionConfig connectionConfig = ConnectionConfig.custom()
                 .setConnectTimeout(Timeout.of(connectTimeout))
@@ -76,7 +80,7 @@ public final class PooledRestClientRequestFactory {
         return PoolingHttpClientConnectionManagerBuilder.create()
                 .setDefaultConnectionConfig(connectionConfig)
                 .setMaxConnTotal(poolSize)
-                .setMaxConnPerRoute(poolSize)
+                .setMaxConnPerRoute(maxConnectionsPerRoute)
                 .build();
     }
 }

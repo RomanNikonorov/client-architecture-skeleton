@@ -105,6 +105,7 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        max-connections-per-route: 20
         idle-connection-eviction-timeout: 30s
         critical: false
 ```
@@ -130,6 +131,7 @@ app:
         connect-timeout: 300ms
         read-timeout: 500ms
         pool-size: 20
+        max-connections-per-route: 20
         idle-connection-eviction-timeout: 30s
         critical: false
 ```
@@ -147,7 +149,8 @@ public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC
 - `baseUrl` - базовый URL внешней REST-системы;
 - `connectTimeout` - timeout на установку HTTP-соединения;
 - `readTimeout` - timeout на чтение HTTP-ответа;
-- `poolSize` - максимальный размер connection pool и per-route limit;
+- `poolSize` - максимальный размер connection pool;
+- `maxConnectionsPerRoute` - максимальный размер connection pool на один route;
 - `idleConnectionEvictionTimeout` - время простоя соединения перед eviction;
 - `critical` - признак, должен ли adapter пробрасывать ошибки вместо fallback.
 
@@ -158,6 +161,7 @@ public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC
 | `connect-timeout` | `300ms` |
 | `read-timeout` | `500ms` |
 | `pool-size` | `20` |
+| `max-connections-per-route` | значение `pool-size` |
 | `idle-connection-eviction-timeout` | `30s` |
 
 Default `base-url` зависит от конкретной внешней системы и задается в properties
@@ -192,6 +196,7 @@ HttpComponentsClientHttpRequestFactory externalSystemCRequestFactory(
             systemC.connectTimeout(),
             systemC.readTimeout(),
             systemC.poolSize(),
+            systemC.maxConnectionsPerRoute(),
             systemC.idleConnectionEvictionTimeout()
     );
 }
