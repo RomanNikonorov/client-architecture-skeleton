@@ -2,13 +2,12 @@
 
 ## Решение
 
-Сервис организован как набор bounded contexts, каждый из которых является
-кандидатом на будущий вынос в отдельный сервис:
+Сервис организован вокруг bounded context, который является кандидатом на
+будущий вынос в отдельный сервис:
 
 - `clients` содержит клиентскую агрегацию.
-- `credit` содержит кредитные решения.
 
-Внутри каждого bounded context сохраняется послойная структура:
+Внутри bounded context сохраняется послойная структура:
 
 - `<context>.api.rest` и `<context>.api.grpc` содержат входные адаптеры.
 - `<context>.application.usecase` содержит сценарии использования, command/result records и бизнес-оркестрацию.
@@ -29,7 +28,7 @@ Shared technical packages остаются вне бизнес-доменов:
 - `<context>.api.*` не должен зависеть от `<context>.infrastructure.*`.
 - `<context>.application.*` не должен зависеть от REST, gRPC, JPA или инфраструктурных классов.
 - `*.domain.*` не должен зависеть от Spring, JPA, REST, gRPC, API или infrastructure.
-- Bounded context не должен импортировать application/domain/infrastructure/API типы другого bounded context.
+- Bounded context не должен импортировать application/domain/infrastructure/API типы другого bounded context, если такой context появляется в проекте.
 - Исходящие интеграции доступны только через порты из `<context>.application.port`.
 - Бизнес-оркестрация и технический fan-out API не смешиваются в одном package.
 - Архитектурные тесты проверяют эти правила.

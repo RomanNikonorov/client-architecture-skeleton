@@ -37,7 +37,6 @@ me.nikonorov
 Основные bounded contexts:
 
 - `clients` - агрегация клиентского профиля и внешних сигналов.
-- `credit` - кредитные решения.
 
 Внутри каждого bounded context:
 

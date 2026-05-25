@@ -1,20 +1,19 @@
 # Скелет архитектуры клиентского сервиса
 
-Скелет показывает масштабируемую структуру интеграционного микросервиса с двумя
-bounded contexts:
+Скелет показывает масштабируемую структуру интеграционного микросервиса с
+bounded context клиентской агрегации:
 
 1. `clients` агрегирует клиентский профиль и внешние сигналы.
-2. `credit` оценивает кредитное решение и оформлен как отдельный бизнес-домен.
-3. REST-точка входа принимает запрос.
-4. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
-5. Прикладной слой домена параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
-6. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
-7. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
-8. Архитектурные правила зафиксированы в ADR и проверяются тестами.
+2. REST-точка входа принимает запрос.
+3. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
+4. Прикладной слой домена параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
+5. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
+6. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
+7. Архитектурные правила зафиксированы в ADR и проверяются тестами.
 
-Оба бизнес-домена имеют собственные слои `api`, `application`, `domain` и
-`infrastructure`. Shared-зависимостью остается только технический
-`fanout` API и его infrastructure implementation на virtual threads.
+Бизнес-домен имеет собственные слои `api`, `application`, `domain` и
+`infrastructure`. Shared-зависимостями остаются технический `fanout` API, его
+infrastructure implementation на virtual threads и HTTP helpers.
 
 ## Точка входа
 
@@ -28,23 +27,9 @@ Content-Type: application/json
 }
 ```
 
-Кредитный bounded context:
-
-```http
-POST /api/v1/credit/decisions
-Content-Type: application/json
-
-{
-  "requestId": "req-1",
-  "clientId": "client-001",
-  "requestedAmount": 300000
-}
-```
-
 ## Слои
 
 - `clients` - bounded context клиентской агрегации.
-- `credit` - bounded context кредитных решений.
 - `<context>.api.rest` - входные REST-адаптеры домена.
 - `<context>.api.grpc` - входные gRPC-адаптеры домена.
 - `<context>.application.usecase` - сценарии использования, command/result records и бизнес-оркестрация домена.
@@ -61,8 +46,8 @@ Content-Type: application/json
 должны быть скрыты за application-портами этого же bounded context.
 
 Bounded contexts не должны импортировать application/domain/infrastructure/API
-типы друг друга. Это сохраняет возможность вынести `clients` или `credit` в
-отдельный сервис без распутывания внутренних зависимостей.
+типы друг друга. Это сохраняет возможность вынести домен в отдельный сервис без
+распутывания внутренних зависимостей.
 
 ## Virtual Threads
 
@@ -89,8 +74,6 @@ spring:
           address: localhost:9091
         system-b:
           address: localhost:9092
-        credit-scoring:
-          address: localhost:9093
 ```
 
 Бизнес-параметры интеграций:
@@ -179,9 +162,8 @@ public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC
 
 Default `base-url` зависит от конкретной внешней системы и задается в properties
 bounded context. Например, `ExternalRestSystemsProperties` подставляет
-`http://localhost:9083` для `system-c`, а `CreditRestSystemsProperties`
-подставляет `http://localhost:9084` для `pricing`. Любой параметр можно
-переопределить через YAML.
+`http://localhost:9083` для `system-c`. Любой параметр можно переопределить
+через YAML.
 
 Infrastructure configuration должна создавать два bean на внешнюю систему.
 Именованный `RestClient` создается через `clone()` от shared bean
@@ -241,26 +223,6 @@ ExternalSystemCRestClient(
    `RestClient.builder()`.
 4. В adapter внедрить `RestClient` через `@Qualifier`.
 5. Покрыть adapter mapping/fallback behavior тестом.
-
-Кредитный bounded context использует отдельные настройки под `app.credit`:
-
-```yaml
-app:
-  credit:
-    external-systems:
-      scoring:
-        channel: credit-scoring
-        deadline: 400ms
-        critical: false
-    external-rest-systems:
-      pricing:
-        base-url: http://localhost:9084
-        connect-timeout: 300ms
-        read-timeout: 500ms
-        pool-size: 20
-        idle-connection-eviction-timeout: 30s
-        critical: false
-```
 
 ## Архитектурные решения
 
