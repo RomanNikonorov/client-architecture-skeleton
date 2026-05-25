@@ -2,6 +2,7 @@ package me.nikonorov.clients.infrastructure.rest;
 
 import me.nikonorov.clients.application.usecase.ClientAggregationCommand;
 import me.nikonorov.clients.application.usecase.ClientAggregationResult;
+import me.nikonorov.http.OutboundRestClientProperties;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
@@ -31,10 +32,12 @@ class ExternalSystemCRestClientTest {
         try {
             URI baseUrl = URI.create("http://localhost:" + server.getAddress().getPort());
             ExternalRestSystemsProperties properties = new ExternalRestSystemsProperties(
-                    new ExternalRestSystemsProperties.SystemConfig(
+                    new OutboundRestClientProperties(
                             baseUrl,
                             Duration.ofMillis(300),
                             Duration.ofMillis(500),
+                            20,
+                            Duration.ofSeconds(30),
                             false
                     )
             );

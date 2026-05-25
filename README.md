@@ -1,20 +1,19 @@
 # Скелет архитектуры клиентского сервиса
 
-Скелет показывает масштабируемую структуру интеграционного микросервиса с двумя
-bounded contexts:
+Скелет показывает масштабируемую структуру интеграционного микросервиса с
+bounded context клиентской агрегации:
 
 1. `clients` агрегирует клиентский профиль и внешние сигналы.
-2. `credit` оценивает кредитное решение и оформлен как отдельный бизнес-домен.
-3. REST-точка входа принимает запрос.
-4. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
-5. Прикладной слой домена параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
-6. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
-7. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
-8. Архитектурные правила зафиксированы в ADR и проверяются тестами.
+2. REST-точка входа принимает запрос.
+3. gRPC-точка входа может принимать тот же сценарий через отдельный входной адаптер.
+4. Прикладной слой домена параллельно запускает чтение из БД и исходящие вызовы через `FanOutExecutor`.
+5. Параллелизм реализован через virtual threads и ограничен внутри одного запроса.
+6. Исходящий gRPC использует blocking stubs, исходящий REST использует Spring `RestClient`.
+7. Архитектурные правила зафиксированы в ADR и проверяются тестами.
 
-Оба бизнес-домена имеют собственные слои `api`, `application`, `domain` и
-`infrastructure`. Shared-зависимостью остается только технический
-`fanout` API и его infrastructure implementation на virtual threads.
+Бизнес-домен имеет собственные слои `api`, `application`, `domain` и
+`infrastructure`. Shared-зависимостями остаются технический `fanout` API, его
+infrastructure implementation на virtual threads и HTTP helpers.
 
 ## Точка входа
 
@@ -28,23 +27,9 @@ Content-Type: application/json
 }
 ```
 
-Кредитный bounded context:
-
-```http
-POST /api/v1/credit/decisions
-Content-Type: application/json
-
-{
-  "requestId": "req-1",
-  "clientId": "client-001",
-  "requestedAmount": 300000
-}
-```
-
 ## Слои
 
 - `clients` - bounded context клиентской агрегации.
-- `credit` - bounded context кредитных решений.
 - `<context>.api.rest` - входные REST-адаптеры домена.
 - `<context>.api.grpc` - входные gRPC-адаптеры домена.
 - `<context>.application.usecase` - сценарии использования, command/result records и бизнес-оркестрация домена.
@@ -53,6 +38,7 @@ Content-Type: application/json
 - `<context>.infrastructure` - JPA, исходящие gRPC-клиенты, исходящие REST-клиенты и техническая конфигурация домена.
 - `fanout` - shared technical API для ограниченного fan-out внутри use cases.
 - `concurrent` - shared implementation fan-out на virtual threads.
+- `http` - shared technical helpers для исходящих REST-клиентов infrastructure слоя.
 - `internal` - детали реализации, которые не должны использоваться другими модулями.
 
 Входные адаптеры должны оставаться тонкими: валидировать и маппить транспортные
@@ -60,8 +46,8 @@ Content-Type: application/json
 должны быть скрыты за application-портами этого же bounded context.
 
 Bounded contexts не должны импортировать application/domain/infrastructure/API
-типы друг друга. Это сохраняет возможность вынести `clients` или `credit` в
-отдельный сервис без распутывания внутренних зависимостей.
+типы друг друга. Это сохраняет возможность вынести домен в отдельный сервис без
+распутывания внутренних зависимостей.
 
 ## Virtual Threads
 
@@ -88,8 +74,6 @@ spring:
           address: localhost:9091
         system-b:
           address: localhost:9092
-        credit-scoring:
-          address: localhost:9093
 ```
 
 Бизнес-параметры интеграций:
@@ -120,26 +104,125 @@ app:
         base-url: http://localhost:9083
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
 ```
 
-Кредитный bounded context использует отдельные настройки под `app.credit`:
+### Конфигурирование исходящего REST-клиента
+
+REST-интеграция настраивается в три шага:
+
+1. YAML-блок конкретной внешней системы биндингом попадает в properties
+   bounded context.
+2. Общие HTTP-параметры хранятся в `http.OutboundRestClientProperties`.
+3. Infrastructure configuration создает именованный `RestClient` и отдельный
+   `HttpComponentsClientHttpRequestFactory` через `http.PooledRestClientRequestFactory`.
+
+Например, для `clients` YAML:
 
 ```yaml
 app:
-  credit:
-    external-systems:
-      scoring:
-        channel: credit-scoring
-        deadline: 400ms
-        critical: false
+  client:
     external-rest-systems:
-      pricing:
-        base-url: http://localhost:9084
+      system-c:
+        base-url: http://localhost:9083
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
 ```
+
+биндится в:
+
+```java
+@ConfigurationProperties(prefix = "app.client.external-rest-systems")
+public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC) {
+}
+```
+
+`OutboundRestClientProperties` содержит transport-настройки:
+
+- `baseUrl` - базовый URL внешней REST-системы;
+- `connectTimeout` - timeout на установку HTTP-соединения;
+- `readTimeout` - timeout на чтение HTTP-ответа;
+- `poolSize` - максимальный размер connection pool и per-route limit;
+- `idleConnectionEvictionTimeout` - время простоя соединения перед eviction;
+- `critical` - признак, должен ли adapter пробрасывать ошибки вместо fallback.
+
+Общие HTTP defaults задаются один раз в `OutboundRestClientProperties`:
+
+| Параметр | Default |
+| --- | --- |
+| `connect-timeout` | `300ms` |
+| `read-timeout` | `500ms` |
+| `pool-size` | `20` |
+| `idle-connection-eviction-timeout` | `30s` |
+
+Default `base-url` зависит от конкретной внешней системы и задается в properties
+bounded context. Например, `ExternalRestSystemsProperties` подставляет
+`http://localhost:9083` для `system-c`. Любой параметр можно переопределить
+через YAML.
+
+Infrastructure configuration должна создавать два bean на внешнюю систему.
+Именованный `RestClient` создается через `clone()` от shared bean
+`outboundRestClientBuilder`, чтобы сохранить observability и tracing:
+
+```java
+@Bean("externalSystemCRestApiClient")
+RestClient externalSystemCRestApiClient(
+        @Qualifier("outboundRestClientBuilder")
+        RestClient.Builder outboundRestClientBuilder,
+        @Qualifier("externalSystemCRequestFactory")
+        HttpComponentsClientHttpRequestFactory requestFactory,
+        ExternalRestSystemsProperties properties
+) {
+    return outboundRestClientBuilder.clone()
+            .baseUrl(properties.systemC().baseUrl().toString())
+            .requestFactory(requestFactory)
+            .build();
+}
+
+@Bean(destroyMethod = "destroy")
+HttpComponentsClientHttpRequestFactory externalSystemCRequestFactory(
+        ExternalRestSystemsProperties properties
+) {
+    OutboundRestClientProperties systemC = properties.systemC();
+    return PooledRestClientRequestFactory.create(
+            systemC.connectTimeout(),
+            systemC.readTimeout(),
+            systemC.poolSize(),
+            systemC.idleConnectionEvictionTimeout()
+    );
+}
+```
+
+Adapter внедряет именно именованный `RestClient`:
+
+```java
+ExternalSystemCRestClient(
+        @Qualifier("externalSystemCRestApiClient")
+        RestClient externalSystemCRestClient,
+        ExternalRestSystemsProperties properties
+) {
+    this.externalSystemCRestClient = externalSystemCRestClient;
+    this.properties = properties;
+}
+```
+
+Для новой REST-интеграции в существующем bounded context нужно:
+
+1. Добавить поле `OutboundRestClientProperties` в properties этого context.
+2. В compact constructor properties подставить default `baseUrl` через
+   `OutboundRestClientProperties.withDefaultHttpParameters(...)` или
+   `withDefaultBaseUrl(...)`.
+3. Добавить именованные beans `RestClient` и request factory в
+   `<context>.infrastructure.rest`; `RestClient` создавать через
+   `outboundRestClientBuilder.clone()`, а не через статический
+   `RestClient.builder()`.
+4. В adapter внедрить `RestClient` через `@Qualifier`.
+5. Покрыть adapter mapping/fallback behavior тестом.
 
 ## Архитектурные решения
 

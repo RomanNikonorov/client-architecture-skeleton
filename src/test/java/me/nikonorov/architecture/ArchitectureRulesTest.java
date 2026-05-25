@@ -8,8 +8,7 @@ import me.nikonorov.fanout.AsyncProperties;
 import me.nikonorov.fanout.FanOutExecutor;
 import me.nikonorov.clients.application.port.ExternalSystemAClient;
 import me.nikonorov.clients.application.usecase.ClientAggregationUseCase;
-import me.nikonorov.credit.application.port.CreditScoringClient;
-import me.nikonorov.credit.application.usecase.CreditDecisionUseCase;
+import me.nikonorov.http.PooledRestClientRequestFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,10 +78,8 @@ class ArchitectureRulesTest {
                 .isEqualTo("me.nikonorov.fanout");
         assertThat(classes.get(AsyncProperties.class).getPackageName())
                 .isEqualTo("me.nikonorov.fanout");
-        assertThat(classes.get(CreditDecisionUseCase.class).getPackageName())
-                .isEqualTo("me.nikonorov.credit.application.usecase");
-        assertThat(classes.get(CreditScoringClient.class).getPackageName())
-                .isEqualTo("me.nikonorov.credit.application.port");
+        assertThat(classes.get(PooledRestClientRequestFactory.class).getPackageName())
+                .isEqualTo("me.nikonorov.http");
     }
 
     @Test
@@ -96,29 +93,4 @@ class ArchitectureRulesTest {
                 .check(classes);
     }
 
-    @Test
-    void creditContextDoesNotDependOnClientAggregationLayers() {
-        noClasses()
-                .that().resideInAPackage("..credit..")
-                .should().dependOnClassesThat().resideInAnyPackage(
-                        "me.nikonorov.clients.api..",
-                        "me.nikonorov.clients.domain..",
-                        "me.nikonorov.clients.application..",
-                        "me.nikonorov.clients.infrastructure..")
-                .allowEmptyShould(true)
-                .check(classes);
-    }
-
-    @Test
-    void clientContextDoesNotDependOnCreditLayers() {
-        noClasses()
-                .that().resideInAPackage("..clients..")
-                .should().dependOnClassesThat().resideInAnyPackage(
-                        "me.nikonorov.credit.api..",
-                        "me.nikonorov.credit.domain..",
-                        "me.nikonorov.credit.application..",
-                        "me.nikonorov.credit.infrastructure..")
-                .allowEmptyShould(true)
-                .check(classes);
-    }
 }

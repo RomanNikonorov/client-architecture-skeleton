@@ -26,10 +26,6 @@ spring:
           address: localhost:9092
           ssl:
             enabled: false
-        credit-scoring:
-          address: localhost:9093
-          ssl:
-            enabled: false
 
 management:
   endpoints:
@@ -61,20 +57,9 @@ app:
         base-url: http://localhost:9083
         connect-timeout: 300ms
         read-timeout: 500ms
+        pool-size: 20
+        idle-connection-eviction-timeout: 30s
         critical: false
-  credit:
-    external-systems:
-      scoring:
-        channel: credit-scoring
-        deadline: 400ms
-        critical: false
-    external-rest-systems:
-      pricing:
-        base-url: http://localhost:9084
-        connect-timeout: 300ms
-        read-timeout: 500ms
-        critical: false
-
 resilience4j:
   circuitbreaker:
     instances:
