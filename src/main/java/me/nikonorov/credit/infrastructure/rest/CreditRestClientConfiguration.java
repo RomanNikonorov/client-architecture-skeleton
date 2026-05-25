@@ -12,7 +12,9 @@ import org.springframework.web.client.RestClient;
  * Инфраструктурная конфигурация REST clients кредитного bounded context.
  *
  * <p>Каждый {@link RestClient} получает отдельный HTTP connection pool и
- * timeout-настройки из типизированной конфигурации.</p>
+ * timeout-настройки из типизированной конфигурации. Конкретные clients
+ * создаются через {@link RestClient#mutate()} от shared
+ * {@code outboundRestClient}, чтобы сохранить observability и tracing.</p>
  */
 @Configuration
 class CreditRestClientConfiguration {
@@ -20,16 +22,19 @@ class CreditRestClientConfiguration {
     /**
      * Создает {@code RestClient}, используемый адаптером pricing.
      *
+     * @param outboundRestClient базовый shared client с observability/tracing настройками
      * @param properties base URL и timeout-конфигурация pricing
      * @return настроенный REST-клиент для pricing-системы
      */
     @Bean("creditPricingRestApiClient")
     RestClient creditPricingRestApiClient(
+            @Qualifier("outboundRestClient")
+            RestClient outboundRestClient,
             @Qualifier("creditPricingRequestFactory")
             HttpComponentsClientHttpRequestFactory requestFactory,
             CreditRestSystemsProperties properties
     ) {
-        return RestClient.builder()
+        return outboundRestClient.mutate()
                 .baseUrl(properties.pricing().baseUrl().toString())
                 .requestFactory(requestFactory)
                 .build();
