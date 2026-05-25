@@ -13,8 +13,9 @@ import org.springframework.web.client.RestClient;
  *
  * <p>Каждый {@link RestClient} получает отдельный HTTP connection pool и
  * timeout-настройки из типизированной конфигурации. Конкретные clients
- * создаются через {@link RestClient#mutate()} от shared
- * {@code outboundRestClient}, чтобы сохранить observability и tracing.</p>
+ * создаются через {@link RestClient.Builder#clone()} от shared
+ * {@code outboundRestClientBuilder}, чтобы сохранить observability и tracing.
+ * </p>
  */
 @Configuration
 class CreditRestClientConfiguration {
@@ -22,19 +23,19 @@ class CreditRestClientConfiguration {
     /**
      * Создает {@code RestClient}, используемый адаптером pricing.
      *
-     * @param outboundRestClient базовый shared client с observability/tracing настройками
+     * @param outboundRestClientBuilder базовый shared builder с observability/tracing настройками
      * @param properties base URL и timeout-конфигурация pricing
      * @return настроенный REST-клиент для pricing-системы
      */
     @Bean("creditPricingRestApiClient")
     RestClient creditPricingRestApiClient(
-            @Qualifier("outboundRestClient")
-            RestClient outboundRestClient,
+            @Qualifier("outboundRestClientBuilder")
+            RestClient.Builder outboundRestClientBuilder,
             @Qualifier("creditPricingRequestFactory")
             HttpComponentsClientHttpRequestFactory requestFactory,
             CreditRestSystemsProperties properties
     ) {
-        return outboundRestClient.mutate()
+        return outboundRestClientBuilder.clone()
                 .baseUrl(properties.pricing().baseUrl().toString())
                 .requestFactory(requestFactory)
                 .build();
