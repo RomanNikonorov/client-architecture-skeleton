@@ -49,6 +49,9 @@ public record OutboundRestClientProperties(
     public static final Duration DEFAULT_IDLE_CONNECTION_EVICTION_TIMEOUT = Duration.ofSeconds(30);
 
     public OutboundRestClientProperties {
+        if (baseUrl == null) {
+            throw new IllegalArgumentException("baseUrl must be configured for outbound REST client");
+        }
         if (connectTimeout == null || connectTimeout.isZero() || connectTimeout.isNegative()) {
             connectTimeout = DEFAULT_CONNECT_TIMEOUT;
         }
@@ -66,42 +69,4 @@ public record OutboundRestClientProperties(
         }
     }
 
-    /**
-     * Создает конфигурацию с дефолтными HTTP transport-параметрами.
-     *
-     * @param baseUrl default base URL конкретной внешней системы
-     * @return нормализованная конфигурация исходящего REST-клиента
-     */
-    public static OutboundRestClientProperties withDefaultHttpParameters(URI baseUrl) {
-        return new OutboundRestClientProperties(
-                baseUrl,
-                DEFAULT_CONNECT_TIMEOUT,
-                DEFAULT_READ_TIMEOUT,
-                DEFAULT_POOL_SIZE,
-                DEFAULT_POOL_SIZE,
-                DEFAULT_IDLE_CONNECTION_EVICTION_TIMEOUT,
-                false
-        );
-    }
-
-    /**
-     * Подставляет default base URL конкретной интеграции, если он не задан.
-     *
-     * @param defaultBaseUrl default base URL внешней REST-системы
-     * @return текущая конфигурация или копия с подставленным {@code baseUrl}
-     */
-    public OutboundRestClientProperties withDefaultBaseUrl(URI defaultBaseUrl) {
-        if (baseUrl != null) {
-            return this;
-        }
-        return new OutboundRestClientProperties(
-                defaultBaseUrl,
-                connectTimeout,
-                readTimeout,
-                poolSize,
-                maxConnectionsPerRoute,
-                idleConnectionEvictionTimeout,
-                critical
-        );
-    }
 }

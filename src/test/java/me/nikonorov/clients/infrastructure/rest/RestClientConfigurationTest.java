@@ -7,26 +7,30 @@ import java.net.URI;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RestClientConfigurationTest {
 
     @Test
-    void usesDefaultsWhenSystemConfigIsMissing() {
-        ExternalRestSystemsProperties properties = new ExternalRestSystemsProperties(null);
-
-        assertThat(properties.systemC().baseUrl()).isEqualTo(URI.create("http://localhost:9083"));
-        assertThat(properties.systemC().connectTimeout()).isEqualTo(Duration.ofMillis(300));
-        assertThat(properties.systemC().readTimeout()).isEqualTo(Duration.ofMillis(500));
-        assertThat(properties.systemC().poolSize()).isEqualTo(20);
-        assertThat(properties.systemC().maxConnectionsPerRoute()).isEqualTo(20);
-        assertThat(properties.systemC().idleConnectionEvictionTimeout()).isEqualTo(Duration.ofSeconds(30));
+    void failsWhenBaseUrlIsMissing() {
+        assertThatThrownBy(() -> new OutboundRestClientProperties(
+                null,
+                Duration.ofMillis(300),
+                Duration.ofMillis(500),
+                20,
+                20,
+                Duration.ofSeconds(30),
+                false
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("baseUrl must be configured for outbound REST client");
     }
 
     @Test
     void normalizesInvalidHttpParametersToDefaults() {
         OutboundRestClientProperties config = new ExternalRestSystemsProperties(
                 new OutboundRestClientProperties(
-                        null,
+                        URI.create("http://localhost:9083"),
                         Duration.ZERO,
                         Duration.ofMillis(-1),
                         0,

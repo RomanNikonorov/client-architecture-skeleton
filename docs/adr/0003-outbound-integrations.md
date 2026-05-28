@@ -9,7 +9,7 @@
 ## Правила
 
 - Адрес gRPC-канала и SSL-настройки находятся в `spring.grpc.client.channels.*`.
-- REST base URL, client timeouts, общий размер connection pool, per-route connection limit и idle connection eviction находятся в типизированной Spring-конфигурации. Общая transport-модель находится в `http.OutboundRestClientProperties`, а context-specific default `baseUrl` задается в properties конкретного bounded context.
+- REST base URL, client timeouts, общий размер connection pool, per-route connection limit и idle connection eviction находятся в типизированной Spring-конфигурации. Общая transport-модель находится в `http.OutboundRestClientProperties`; `baseUrl` обязателен для каждой внешней REST-системы и читается из настроек, без context-specific defaults в Java-коде.
 - Для production REST-клиенты используют shared helper `http.PooledRestClientRequestFactory` поверх Apache HttpClient 5 с отдельным pool на внешнюю систему, eviction expired/idle connections и явным закрытием request factory при остановке context.
 - Каждый исходящий REST-клиент создается как именованный bean `RestClient` вместе с отдельным `HttpComponentsClientHttpRequestFactory`, созданным через `PooledRestClientRequestFactory.requestFactory(...)` из типизированных настроек внешней системы.
 - Integration-specific `RestClient.Builder` настраивается через `PooledRestClientRequestFactory.restClientBuilder(...)`: helper задает `baseUrl`, `requestFactory` и interceptors конкретной интеграции, созданные приложением.

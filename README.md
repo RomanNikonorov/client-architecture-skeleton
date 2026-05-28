@@ -164,10 +164,10 @@ public record ExternalRestSystemsProperties(OutboundRestClientProperties systemC
 | `max-connections-per-route` | значение `pool-size` |
 | `idle-connection-eviction-timeout` | `30s` |
 
-Default `base-url` зависит от конкретной внешней системы и задается в properties
-bounded context. Например, `ExternalRestSystemsProperties` подставляет
-`http://localhost:9083` для `system-c`. Любой параметр можно переопределить
-через YAML.
+`base-url` обязателен для каждой внешней REST-системы и читается из YAML. Если
+блок интеграции или `base-url` не задан, приложение падает на старте при binding
+типизированной конфигурации. Остальные HTTP-параметры можно не указывать:
+`OutboundRestClientProperties` нормализует их к общим defaults.
 
 Infrastructure configuration должна создавать два bean на внешнюю систему.
 Именованный `RestClient` создается через auto-configured `RestClient.Builder`,
@@ -218,9 +218,7 @@ ExternalSystemCRestClient(
 Для новой REST-интеграции в существующем bounded context нужно:
 
 1. Добавить поле `OutboundRestClientProperties` в properties этого context.
-2. В compact constructor properties подставить default `baseUrl` через
-   `OutboundRestClientProperties.withDefaultHttpParameters(...)` или
-   `withDefaultBaseUrl(...)`.
+2. Добавить YAML-блок интеграции с обязательным `base-url`.
 3. Добавить именованные beans `RestClient` и request factory в
    `<context>.infrastructure.rest`; `RestClient` создавать через
    auto-configured `RestClient.Builder` и helper

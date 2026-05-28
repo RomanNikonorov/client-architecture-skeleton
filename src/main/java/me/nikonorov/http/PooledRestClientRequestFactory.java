@@ -77,6 +77,8 @@ public final class PooledRestClientRequestFactory {
     public static HttpComponentsClientHttpRequestFactory requestFactory(
             OutboundRestClientProperties properties
     ) {
+        Objects.requireNonNull(properties, "properties must not be null");
+
         PoolingHttpClientConnectionManager connectionManager = connectionPool(properties);
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(Timeout.of(properties.connectTimeout()))

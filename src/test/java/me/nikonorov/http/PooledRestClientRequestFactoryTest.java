@@ -16,11 +16,19 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class PooledRestClientRequestFactoryTest {
+
+    @Test
+    void failsWhenPropertiesAreMissingForRequestFactory() {
+        assertThatThrownBy(() -> PooledRestClientRequestFactory.requestFactory(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("properties must not be null");
+    }
 
     @Test
     void createsRequestFactoryFromProperties() {
